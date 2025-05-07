@@ -1,0 +1,1227 @@
+Understanding DI : Understanding Dependency Injection (DI) in Angular from Scratch :
+
+Dependency Injection (DI) is a design pattern used in Angular to manage dependencies efficiently by injecting them where required rather than creating them manually.
+
+1. What is Dependency Injection?
+
+Dependency Injection (DI) is a technique where a class receives its dependencies from an external source rather than creating them itself. In Angular, DI helps manage services and components efficiently.
+
+🔹 Example Without DI (Tightly Coupled Code)
+
+class Car {
+  engine: Engine;
+  constructor() {
+    this.engine = new Engine(); // Car is responsible for creating Engine (Bad Practice)
+  }
+}
+🔹 Example With DI (Loosely Coupled Code)
+
+
+class Car {
+  constructor(private engine: Engine) {} // Engine is injected instead of being created
+}
+2. Why Use Dependency Injection in Angular?
+✔ Reduces Coupling → Components/services are not tightly bound.
+✔ Improves Testability → Easy to mock dependencies for unit testing.
+✔ Enhances Code Maintainability → Dependencies are managed centrally.
+✔ Promotes Reusability → Services can be used across different components.
+
+3. How DI Works in Angular?
+Step 1: Create a Service
+Services in Angular are used to store business logic and shared data.
+
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root', // Service is available application-wide
+})
+export class LoggerService {
+  logMessage(msg: string) {
+    console.log(msg);
+  }
+}
+🟢 @Injectable({ providedIn: 'root' }) → Automatically registers the service in the root module.
+
+Step 2: Inject the Service into a Component
+To use LoggerService, inject it into a component via the constructor.
+
+
+import { Component } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-home',
+  template: `<h1>Home Component</h1>`,
+})
+export class HomeComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.logMessage('HomeComponent Loaded!');
+  }
+}
+Step 3: Providing Services Manually (Optional)
+
+Instead of using providedIn: 'root', we can register services manually in the providers array inside a module or component.
+
+🔹 Providing in app.module.ts (Global Scope)
+
+import { NgModule } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@NgModule({
+  providers: [LoggerService], // Registering Service Globally
+})
+export class AppModule {}
+🔹 Providing in app.component.ts (Component Scope)
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  providers: [LoggerService], // Registering Service only for this component
+})
+export class AppComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.logMessage('AppComponent Loaded!');
+  }
+}
+
+4. Different DI Providers in Angular
+
+Angular provides different ways to define dependencies:
+
+Provider Type	Description
+providedIn: 'root'	Singleton service available across the application.
+providers: [ServiceName]	Registers service at a module or component level.
+useClass	Allows using an alternative class for a service.
+useValue	Provides a predefined value instead of a class instance.
+useFactory	Dynamically determines dependency creation.
+
+5. Injecting Dependencies into Services
+
+One service can inject another service using DI.
+
+🔹 Example: Injecting LoggerService into UserService
+
+@Injectable({
+  providedIn: 'root',
+})
+export class UserService {
+  constructor(private logger: LoggerService) {}
+
+  getUser() {
+    this.logger.logMessage('Fetching User Data');
+    return { name: 'John Doe', age: 30 };
+  }
+}
+🔹 Injecting UserService into a Component
+
+export class UserComponent {
+  constructor(private userService: UserService) {
+    console.log(this.userService.getUser());
+  }
+}
+
+6. Hierarchical Dependency Injection in Angular
+
+Angular follows a hierarchical dependency tree, meaning:
+
+Services defined at the root level are shared across the application.
+Services provided at the component level are unique to that component and its children.
+Example of Component-Specific Service
+@Component({
+  selector: 'app-child',
+  providers: [LoggerService], // New instance created only for this component
+})
+export class ChildComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.logMessage('Child Component Loaded!');
+  }
+}
+🔹 Benefit: Each instance of ChildComponent gets a separate LoggerService instance.
+
+7. Using @Inject for Explicit Injection
+Sometimes, we need to use the @Inject decorator to inject dependencies explicitly.
+
+import { Inject } from '@angular/core';
+
+export class UserComponent {
+  constructor(@Inject(LoggerService) private logger: LoggerService) {
+    this.logger.logMessage('User Component Loaded!');
+  }
+}
+
+8. Testing Dependency Injection in Angular
+
+DI makes unit testing easy by allowing us to mock dependencies.
+
+🔹 Example: Mocking LoggerService in a Test
+
+import { TestBed } from '@angular/core/testing';
+import { HomeComponent } from './home.component';
+import { LoggerService } from './logger.service';
+
+class MockLoggerService {
+  logMessage(msg: string) {
+    console.log('Mock Log:', msg);
+  }
+}
+
+describe('HomeComponent', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      declarations: [HomeComponent],
+      providers: [{ provide: LoggerService, useClass: MockLoggerService }],
+    });
+  });
+
+  it('should log a message', () => {
+    const component = TestBed.createComponent(HomeComponent).componentInstance;
+    expect(component).toBeTruthy();
+  });
+});
+
+
+
+Implementing DI in Angular : Dependency Injection (DI) is a core concept in Angular that helps manage dependencies efficiently, making applications more maintainable, testable, and scalable. Below, we'll cover DI from basic to advanced with various examples.
+
+1. Basic Example: Injecting a Simple Service into a Component
+Step 1: Create a Simple Service
+A service is a class decorated with @Injectable() that provides functionality across the application.
+
+🔹 Example: LoggerService
+
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root', // Automatically registers this service globally
+})
+export class LoggerService {
+  log(message: string) {
+    console.log(`Log: ${message}`);
+  }
+}
+Step 2: Inject Service into a Component
+Now, we inject LoggerService into a component.
+
+🔹 Example: AppComponent using LoggerService
+
+import { Component } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-root',
+  template: `<h1>Dependency Injection in Angular</h1>`,
+})
+export class AppComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.log('AppComponent Initialized!');
+  }
+}
+📌 What Happens?
+
+The LoggerService instance is injected into AppComponent via the constructor.
+this.logger.log() logs a message to the console.
+2. Intermediate Example: Injecting One Service into Another
+We can inject a service inside another service to reuse logic.
+
+Step 1: Create a UserService that uses LoggerService
+import { Injectable } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class UserService {
+  constructor(private logger: LoggerService) {}
+
+  getUser() {
+    this.logger.log('Fetching user data...');
+    return { name: 'John Doe', age: 30 };
+  }
+}
+Step 2: Inject UserService into a Component
+
+import { Component } from '@angular/core';
+import { UserService } from './user.service';
+
+@Component({
+  selector: 'app-user',
+  template: `<h2>User Component</h2>`,
+})
+export class UserComponent {
+  constructor(private userService: UserService) {
+    console.log(this.userService.getUser());
+  }
+}
+📌 What Happens?
+
+UserService is injected into UserComponent.
+UserService internally depends on LoggerService, which is also injected via DI.
+DI resolves dependencies automatically.
+
+3. Advanced Example: Using Different Provider Types
+
+Angular allows multiple ways to provide dependencies using DI Providers.
+
+3.1. Using useClass: Providing Alternative Implementation
+If we want to use a different implementation of a service, we can use useClass.
+Step 1: Create a Base Service (LoggerService)
+Define a base service (LoggerService) that acts as an interface for logging.
+
+logger.service.ts
+typescript
+Copy
+Edit
+import { Injectable } from '@angular/core';
+
+@Injectable()
+export class LoggerService {
+  log(message: string) {
+    console.log(`Default Logger: ${message}`);
+  }
+}
+Step 2: Create an Alternative Implementation (FileLoggerService)
+Now, create an alternative logging service (FileLoggerService) that provides a different implementation.
+
+file-logger.service.ts
+typescript
+Copy
+Edit
+import { Injectable } from '@angular/core';
+
+@Injectable()
+export class FileLoggerService {
+  log(message: string) {
+    console.log(`File Logger: ${message}`);
+  }
+}
+Step 3: Provide Alternative Implementation in AppModule
+In the app.module.ts file, provide FileLoggerService instead of LoggerService using useClass.
+
+app.module.ts
+typescript
+Copy
+Edit
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { LoggerService } from './logger.service';
+import { FileLoggerService } from './file-logger.service';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule],
+  providers: [{ provide: LoggerService, useClass: FileLoggerService }],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+Step 4: Inject and Use the Logger in a Component
+Inject LoggerService into a component, and Angular will automatically use FileLoggerService instead.
+
+app.component.ts
+typescript
+Copy
+Edit
+import { Component } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-root',
+  template: `<h1>Angular Dependency Injection Example</h1>`,
+})
+export class AppComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.log('App started successfully');
+  }
+}
+
+📌 What Happens?
+
+Every time LoggerService is injected, FileLoggerService will be used instead.
+
+3.2. Using useValue: Providing a Static Value
+
+Step 1: Define a Configuration Object
+Create a constant object that holds application-wide configuration settings.
+
+app.config.ts
+
+export const APP_CONFIG = {
+  apiUrl: 'https://api.example.com',
+  enableLogging: true,
+};
+
+Step 2: Provide the Configuration Using useValue
+
+In AppModule, use useValue to provide the APP_CONFIG object as a dependency.
+
+app.module.ts
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { ConfigComponent } from './config.component';
+import { APP_CONFIG } from './app.config';
+
+@NgModule({
+  declarations: [AppComponent, ConfigComponent],
+  imports: [BrowserModule],
+  providers: [{ provide: 'APP_CONFIG', useValue: APP_CONFIG }],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+
+Step 3: Inject APP_CONFIG into a Component
+
+Now, inject the configuration object into a component using the @Inject decorator.
+
+config.component.ts
+
+import { Component, Inject } from '@angular/core';
+
+@Component({
+  selector: 'app-config',
+  template: `<p>Config Component Loaded</p>`,
+})
+export class ConfigComponent {
+  constructor(@Inject('APP_CONFIG') private config: any) {
+    console.log(`API URL: ${this.config.apiUrl}`);
+    console.log(`Logging Enabled: ${this.config.enableLogging}`);
+  }
+}
+Step 4: Display the Component in AppComponent
+Ensure the ConfigComponent is used in AppComponent so it gets rendered.
+
+app.component.ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  template: `<h1>Angular useValue DI Example</h1><app-config></app-config>`,
+})
+export class AppComponent {}
+📌 What Happens?
+
+The APP_CONFIG object is injected into ConfigComponent.
+No need for a separate service—just inject the value.
+
+📌 What Happens?
+
+loggerFactory() dynamically creates an instance of FileLoggerService.
+
+Step 1: Create the Base Logger Service
+
+Define a base service (LoggerService) that acts as an interface for logging.
+
+logger.service.ts
+import { Injectable } from '@angular/core';
+
+@Injectable()
+export class LoggerService {
+  log(message: string) {
+    console.log(`Default Logger: ${message}`);
+  }
+}
+Step 2: Create an Alternative Implementation (FileLoggerService)
+
+Create a different logging service (FileLoggerService) with another implementation.
+
+file-logger.service.ts
+import { Injectable } from '@angular/core';
+
+@Injectable()
+export class FileLoggerService {
+  log(message: string) {
+    console.log(`File Logger: ${message}`);
+  }
+}
+Step 3: Define the Factory Function
+
+The factory function dynamically determines which implementation to use.
+
+logger.factory.ts
+import { FileLoggerService } from './file-logger.service';
+
+export function loggerFactory() {
+  return new FileLoggerService(); // Can return different instances dynamically
+}
+Step 4: Provide the Factory in AppModule
+Use useFactory in the providers array.
+
+app.module.ts
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { LoggerService } from './logger.service';
+import { loggerFactory } from './logger.factory';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule],
+  providers: [{ provide: LoggerService, useFactory: loggerFactory }],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+
+Step 5: Inject LoggerService into a Component
+Now, inject LoggerService into a component, and Angular will use the factory function to provide an instance.
+
+logger.component.ts
+import { Component } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-logger',
+  template: `<p>Logger Component</p>`,
+})
+export class LoggerComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.log('Logger Component Loaded');
+  }
+}
+Step 6: Use the Logger Component in AppComponent
+Ensure the LoggerComponent is included in the AppComponent.
+
+app.component.html
+<h1>Angular useFactory DI Example</h1>
+<app-logger></app-logger>
+Can be useful for conditionally providing different services.
+
+4. Hierarchical Dependency Injection: Scoping Services
+
+By default, services provided at the root level are shared across components.
+But, we can scope services to specific components.
+
+4.1. Providing a Service at Component Level
+import { Component } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-child',
+  template: `<p>Child Component</p>`,
+  providers: [LoggerService], // A new instance is created only for this component
+})
+export class ChildComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.log('Child Component Initialized');
+  }
+}
+📌 What Happens?
+
+Unlike providedIn: 'root', this creates a new instance of LoggerService just for this component.
+
+5. Using @Inject for Explicit Dependency Injection
+
+By default, Angular resolves dependencies automatically. But sometimes, we need explicit injection.
+
+🔹 Injecting a Service Explicitly
+
+import { Component, Inject } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-inject-example',
+  template: `<p>Inject Example</p>`,
+})
+export class InjectExampleComponent {
+  constructor(@Inject(LoggerService) private logger: LoggerService) {
+    this.logger.log('Injected LoggerService explicitly');
+  }
+}
+📌 What Happens?
+
+The @Inject(LoggerService) decorator manually injects LoggerService.
+
+
+
+Constructor based Injector :
+
+Constructor-based injection is the most common method of injecting dependencies in Angular. It allows dependencies (services, values, etc.) to be injected into a class via its constructor. This ensures that dependencies are provided when the class is instantiated.
+
+1. What is Constructor-Based Injection?
+In constructor-based injection, dependencies are passed via the constructor of a class, allowing Angular's Dependency Injection (DI) system to manage and provide instances of required services automatically.
+
+Basic Syntax
+class MyComponent {
+  constructor(private myService: MyService) {}
+}
+Here, MyService is injected into MyComponent via the constructor.
+
+2. Simple Example: Injecting a Service into a Component
+Let's start with a basic example where we inject a logging service into a component.
+
+Step 1: Create a Service (LoggerService)
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root' // Makes it globally available
+})
+export class LoggerService {
+  log(message: string) {
+    console.log(message);
+  }
+}
+Step 2: Inject Service into a Component (AppComponent)
+import { Component } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-root',
+  template: `<h1>Angular Constructor Injection Example</h1>`
+})
+export class AppComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.log('AppComponent Loaded!');
+  }
+}
+🔹 How It Works?
+
+LoggerService is automatically instantiated and injected into AppComponent.
+No need to manually create an instance of LoggerService.
+The service remains a singleton due to providedIn: 'root'.
+
+3. Intermediate Example: Injecting One Service into Another
+
+Angular allows services to depend on other services. Let's see how one service can inject another.
+
+Step 1: Create a Data Service (DataService)
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class DataService {
+  fetchData() {
+    return 'Data Fetched from API';
+  }
+}
+Step 2: Inject DataService into Another Service (UserService)
+import { Injectable } from '@angular/core';
+import { DataService } from './data.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class UserService {
+  constructor(private dataService: DataService) {}
+
+  getUserData() {
+    return this.dataService.fetchData();
+  }
+}
+Step 3: Inject UserService into a Component (UserComponent)
+import { Component } from '@angular/core';
+import { UserService } from './user.service';
+
+@Component({
+  selector: 'app-user',
+  template: `<h1>{{ userData }}</h1>`
+})
+export class UserComponent {
+  userData: string;
+
+  constructor(private userService: UserService) {
+    this.userData = this.userService.getUserData();
+  }
+}
+🔹 How It Works?
+
+UserService depends on DataService, which is injected via the constructor.
+UserService is injected into UserComponent.
+The dependency chain works automatically via Angular's DI system.
+
+4. Advanced Example: Using Different Provider Types
+
+Angular supports various types of providers when injecting dependencies. Let's explore a few.
+
+A. Using useClass to Replace a Service Implementation
+You can replace a service implementation dynamically.
+
+Step 1: Create a Base Logger Service
+export abstract class BaseLogger {
+  abstract log(message: string): void;
+}
+Step 2: Create Two Implementations (ConsoleLogger and FileLogger)
+
+import { Injectable } from '@angular/core';
+import { BaseLogger } from './base-logger';
+
+@Injectable()
+export class ConsoleLogger extends BaseLogger {
+  log(message: string) {
+    console.log('Console Logger:', message);
+  }
+}
+
+@Injectable()
+export class FileLogger extends BaseLogger {
+  log(message: string) {
+    console.log('File Logger:', message); // In reality, this would log to a file
+  }
+}
+Step 3: Provide a Specific Implementation (ConsoleLogger)
+import { NgModule } from '@angular/core';
+import { AppComponent } from './app.component';
+import { BaseLogger } from './base-logger';
+import { ConsoleLogger } from './console-logger';
+
+@NgModule({
+  declarations: [AppComponent],
+  providers: [{ provide: BaseLogger, useClass: ConsoleLogger }],
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+
+Step 4: Inject BaseLogger into a Component
+
+import { Component } from '@angular/core';
+import { BaseLogger } from './base-logger';
+
+@Component({
+  selector: 'app-root',
+  template: `<h1>Advanced DI Example</h1>`
+})
+export class AppComponent {
+  constructor(private logger: BaseLogger) {
+    this.logger.log('AppComponent Loaded!');
+  }
+}
+🔹 Key Takeaways
+
+BaseLogger is injected, but the actual instance is ConsoleLogger.
+You can switch implementations by changing the provider in AppModule.
+
+B. Using useValue to Inject a Constant Value
+
+Sometimes, we need to inject a constant instead of a class.
+
+Step 1: Define a Configuration Object
+export const API_CONFIG = {
+  endpoint: 'https://api.example.com',
+  timeout: 5000
+};
+Step 2: Provide it in AppModule
+import { NgModule } from '@angular/core';
+import { API_CONFIG } from './api-config';
+
+@NgModule({
+  providers: [{ provide: 'API_CONFIG', useValue: API_CONFIG }]
+})
+export class AppModule {}
+
+Step 3: Inject it into a Service
+
+import { Inject, Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+  constructor(@Inject('API_CONFIG') private config: any) {}
+
+  getConfig() {
+    return this.config;
+  }
+}
+🔹 Key Takeaways
+
+We inject a JavaScript object instead of a class.
+Useful for configuration settings that don’t change dynamically.
+
+C. Using useFactory for Dynamic Dependency Resolution
+
+Factories allow services to be created dynamically.
+
+Step 1: Create a Factory Function
+
+export function loggerFactory() {
+  return Math.random() > 0.5 ? new ConsoleLogger() : new FileLogger();
+}
+
+Step 2: Provide the Factory in AppModule
+
+import { NgModule } from '@angular/core';
+import { BaseLogger } from './base-logger';
+import { loggerFactory } from './logger-factory';
+
+@NgModule({
+  providers: [{ provide: BaseLogger, useFactory: loggerFactory }]
+})
+export class AppModule {}
+🔹 How It Works?
+
+The factory function randomly returns either ConsoleLogger or FileLogger.
+Helps with conditional dependency injection.
+
+
+
+Singleton and non-Singleton Objects :
+
+
+1. Understanding Singleton and Non-Singleton Objects in Angular
+What is a Singleton Object?
+A Singleton Object is an instance that is created only once and shared across the entire application.
+
+In Angular, services provided at the root level (providedIn: 'root') are singletons.
+They persist throughout the application's lifecycle unless explicitly destroyed.
+Singleton services improve performance by preventing multiple unnecessary instances.
+What is a Non-Singleton Object?
+A Non-Singleton Object is an instance that is created every time a component or module requests it.
+
+In Angular, services provided at the component level create a new instance for each component.
+Each component gets its own isolated copy of the service.
+2. Singleton Service Example (Basic Example)
+A singleton service is shared across all components, meaning only one instance exists.
+
+Step 1: Create a Singleton Service
+Create a LoggerService that logs messages.
+
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root' // Service is a singleton (shared across the app)
+})
+export class LoggerService {
+  logMessage(msg: string) {
+    console.log(`Logger: ${msg}`);
+  }
+}
+Step 2: Inject the Singleton Service into Multiple Components
+
+Now, inject LoggerService into two different components.
+
+Home Component
+import { Component } from '@angular/core';
+import { LoggerService } from '../logger.service';
+
+@Component({
+  selector: 'app-home',
+  template: `<h1>Home Component</h1>`,
+})
+export class HomeComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.logMessage('Home Component Loaded!');
+  }
+}
+Profile Component
+import { Component } from '@angular/core';
+import { LoggerService } from '../logger.service';
+
+@Component({
+  selector: 'app-profile',
+  template: `<h1>Profile Component</h1>`,
+})
+export class ProfileComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.logMessage('Profile Component Loaded!');
+  }
+}
+
+Step 3: Run the App
+
+Both HomeComponent and ProfileComponent use the same instance of LoggerService.
+
+Messages logged will be shared, proving it's a singleton service.
+
+3. Non-Singleton Service Example (Component-Specific Service)
+A non-singleton service creates a new instance for each component.
+
+Step 1: Modify LoggerService for Component-Level Scope
+
+import { Injectable } from '@angular/core';
+
+@Injectable()
+export class LoggerService {
+  logMessage(msg: string) {
+    console.log(`Logger: ${msg}`);
+  }
+}
+❌ Notice: We removed providedIn: 'root', so the service is not global.
+
+Step 2: Provide Service at the Component Level
+Now, register the service in one component only, making it a non-singleton.
+
+Home Component (Has Its Own Logger Instance)
+import { Component } from '@angular/core';
+import { LoggerService } from '../logger.service';
+
+@Component({
+  selector: 'app-home',
+  template: `<h1>Home Component</h1>`,
+  providers: [LoggerService] // New instance for each component
+})
+export class HomeComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.logMessage('Home Component Loaded!');
+  }
+}
+
+Profile Component (Has a Separate Logger Instance)
+
+import { Component } from '@angular/core';
+import { LoggerService } from '../logger.service';
+
+@Component({
+  selector: 'app-profile',
+  template: `<h1>Profile Component</h1>`,
+  providers: [LoggerService] // New instance for this component
+})
+export class ProfileComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.logMessage('Profile Component Loaded!');
+  }
+}
+Step 3: Run the App
+
+Each component gets its own instance of LoggerService.
+
+The logs will be independent, confirming that it's a non-singleton service.
+
+4. Singleton Service at the Module Level
+
+A service can be singleton within a specific module instead of the whole app.
+
+Step 1: Register Service in a Feature Module
+
+In user.module.ts, provide UserService at the module level.
+
+import { NgModule } from '@angular/core';
+import { UserService } from './user.service';
+
+@NgModule({
+  providers: [UserService] // Singleton within this module
+})
+
+export class UserModule {}
+
+Step 2: Create UserService
+
+import { Injectable } from '@angular/core';
+
+@Injectable()
+export class UserService {
+  getUser() {
+    return { name: 'John Doe', age: 30 };
+  }
+}
+
+Step 3: Inject into Components Inside UserModule
+
+Since UserService is provided in UserModule, all components inside this module share the same instance.
+
+5. Advanced Example: Singleton vs Non-Singleton in Lazy-Loaded Modules
+
+Singleton services are shared across lazy-loaded modules if provided in root.
+Non-Singleton services are module-specific if provided in providers.
+Scenario 1: Singleton Service Across Lazy-Loaded Modules
+Step 1: Create Shared AuthService
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root' // Shared across all lazy-loaded modules
+})
+export class AuthService {
+  private user = { name: 'Admin', role: 'Admin' };
+
+  getUser() {
+    return this.user;
+  }
+}
+Step 2: Inject AuthService in Different Lazy Modules
+Both AdminModule and UserModule will share the same instance.
+
+export class AdminComponent {
+  constructor(private authService: AuthService) {
+    console.log(this.authService.getUser()); // Same user instance
+  }
+}
+Scenario 2: Non-Singleton Service in Lazy-Loaded Module
+Step 1: Create Module-Specific Service
+@Injectable()
+export class ModuleLoggerService {
+  logMessage(msg: string) {
+    console.log(`Module Logger: ${msg}`);
+  }
+}
+Step 2: Provide Service in a Lazy Module
+@NgModule({
+  providers: [ModuleLoggerService] // New instance per module
+})
+export class AdminModule {}
+Step 3: Inject in Admin Component
+export class AdminComponent {
+  constructor(private logger: ModuleLoggerService) {
+    this.logger.logMessage('Admin Module Loaded!');
+  }
+}
+Each lazy-loaded module gets a new instance of ModuleLoggerService.
+
+6. Key Differences Between Singleton and Non-Singleton Services
+Feature	Singleton Service	Non-Singleton Service
+Scope	Global (Whole App)	Component or Module-specific
+Instance Count	Only 1	Multiple instances
+Provided In	providedIn: 'root'	providers: [Service] in component/module
+Memory Usage	Efficient	May use more memory
+Sharing Data	Easy to share data	Data is component/module-specific
+
+
+Using Service Classes :
+
+1. What is a Service in Angular?
+
+A service in Angular is a reusable class that contains business logic, API calls, or shared data. Services help separate logic from components, making applications more modular and maintainable.
+
+Why Use Services?
+✅ Code Reusability → Write once, use multiple times.
+✅ Separation of Concerns → Keeps components clean.
+✅ Improves Testability → Easier to unit test.
+✅ Efficient Data Sharing → Share data across multiple components.
+
+2. Creating a Basic Angular Service
+Step 1: Generate a Service
+Use Angular CLI to create a service:
+
+ng generate service services/logger
+
+This creates:
+
+logger.service.ts
+logger.service.spec.ts (for unit testing)
+
+Step 2: Implement a Simple Service
+
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root' // This makes the service available throughout the app
+})
+export class LoggerService {
+  logMessage(msg: string) {
+    console.log('LoggerService:', msg);
+  }
+}
+Step 3: Inject Service into a Component
+
+To use this service, inject it into a component via the constructor.
+
+import { Component } from '@angular/core';
+import { LoggerService } from '../services/logger.service';
+
+@Component({
+  selector: 'app-home',
+  template: `<h1>Home Component</h1>`,
+})
+export class HomeComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.logMessage('HomeComponent Loaded!');
+  }
+}
+✅ The LoggerService is automatically available because of providedIn: 'root'.
+
+3. Creating a Data Service for Sharing Data Across Components
+
+A data service allows multiple components to share data efficiently.
+
+Step 1: Create data.service.ts
+
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class DataService {
+  private message = 'Hello from DataService';
+
+  getMessage() {
+    return this.message;
+  }
+
+  setMessage(newMessage: string) {
+    this.message = newMessage;
+  }
+}
+
+Step 2: Inject Service into Multiple Components
+
+Component 1: Sender
+
+import { Component } from '@angular/core';
+import { DataService } from '../services/data.service';
+
+@Component({
+  selector: 'app-sender',
+  template: `<button (click)="sendMessage()">Send Message</button>`,
+})
+export class SenderComponent {
+  constructor(private dataService: DataService) {}
+
+  sendMessage() {
+    this.dataService.setMessage('Message updated from SenderComponent');
+  }
+}
+
+Component 2: Receiver
+
+import { Component } from '@angular/core';
+import { DataService } from '../services/data.service';
+
+@Component({
+  selector: 'app-receiver',
+  template: `<p>{{ message }}</p>`,
+})
+export class ReceiverComponent {
+  message: string;
+
+  constructor(private dataService: DataService) {
+    this.message = this.dataService.getMessage();
+  }
+}
+✅ Now, when the user clicks the button in SenderComponent, the message updates in ReceiverComponent.
+
+4. Service with HTTP Requests (API Calls)
+
+Angular provides the HttpClient module to handle API requests inside services.
+
+Step 1: Import HttpClientModule in app.module.ts
+
+import { NgModule } from '@angular/core';
+import { HttpClientModule } from '@angular/common/http';
+
+@NgModule({
+  imports: [HttpClientModule], // Registering HttpClient
+})
+export class AppModule {}
+
+Step 2: Create user.service.ts
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class UserService {
+  private apiUrl = 'https://jsonplaceholder.typicode.com/users';
+
+  constructor(private http: HttpClient) {}
+
+  getUsers(): Observable<any> {
+    return this.http.get(this.apiUrl);
+  }
+}
+Step 3: Fetch Data in a Component
+
+import { Component, OnInit } from '@angular/core';
+import { UserService } from '../services/user.service';
+
+@Component({
+  selector: 'app-users',
+  template: `
+    <div *ngFor="let user of users">
+      {{ user.name }} - {{ user.email }}
+    </div>
+  `,
+})
+export class UsersComponent implements OnInit {
+  users: any[] = [];
+
+  constructor(private userService: UserService) {}
+
+  ngOnInit() {
+    this.userService.getUsers().subscribe((data) => {
+      this.users = data;
+    });
+  }
+}
+✅ getUsers() makes an API call, and the response is displayed in the template.
+
+5. Advanced: Service with RxJS for Real-time Data Streaming
+
+🔹 RxJS allows creating reactive data streams with BehaviorSubject for real-time updates.
+
+Step 1: Create notification.service.ts
+
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class NotificationService {
+  private messageSource = new BehaviorSubject<string>('Welcome!');
+  currentMessage = this.messageSource.asObservable();
+
+  changeMessage(newMessage: string) {
+    this.messageSource.next(newMessage);
+  }
+}
+
+Step 2: Inject Service into Components
+Component 1: Send Notification
+
+import { Component } from '@angular/core';
+import { NotificationService } from '../services/notification.service';
+
+@Component({
+  selector: 'app-notifier',
+  template: `<button (click)="updateMessage()">Update Notification</button>`,
+})
+export class NotifierComponent {
+  constructor(private notificationService: NotificationService) {}
+
+  updateMessage() {
+    this.notificationService.changeMessage('New Notification from NotifierComponent!');
+  }
+}
+Component 2: Receive Notification
+
+import { Component, OnInit } from '@angular/core';
+import { NotificationService } from '../services/notification.service';
+
+@Component({
+  selector: 'app-alert',
+  template: `<p>{{ message }}</p>`,
+})
+export class AlertComponent implements OnInit {
+  message: string;
+
+  constructor(private notificationService: NotificationService) {}
+
+  ngOnInit() {
+    this.notificationService.currentMessage.subscribe((msg) => {
+      this.message = msg;
+    });
+  }
+}
+✅ Now, whenever NotifierComponent updates the message, AlertComponent displays the new message in real time.
+
+6. Testing a Service in Angular
+
+Mocking a service for unit testing using Jasmine and TestBed.
+
+Test logger.service.spec.ts
+
+import { TestBed } from '@angular/core/testing';
+import { LoggerService } from './logger.service';
+
+describe('LoggerService', () => {
+  let service: LoggerService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(LoggerService);
+  });
+
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+
+  it('should log message', () => {
+    spyOn(console, 'log');
+    service.logMessage('Test Message');
+    expect(console.log).toHaveBeenCalledWith('LoggerService:', 'Test Message');
+  });
+});
+✅ This ensures that the LoggerService is working as expected.
+
+

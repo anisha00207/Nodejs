@@ -1,0 +1,1040 @@
+What are Components : What are Components in Angular?
+
+In Angular, a Component is the fundamental building block of the user interface. Every Angular application consists of multiple components that define how the UI should appear and behave.
+
+Understanding Components from Scratch :
+
+A Component in Angular is a TypeScript class that interacts with the HTML template and defines how a specific section of the UI should function. Each component consists of:
+
+HTML Template (.html file) - Defines the UI structure.
+CSS Styles (.css or .scss file) - Defines the component’s styling.
+TypeScript Class (.ts file) - Contains the component’s logic.
+Metadata (Decorator) - Uses @Component() to define essential metadata.
+Component Structure
+Each component in Angular consists of three main parts:
+
+Template (HTML) → View Layer
+
+Defines the UI structure of the component.
+Class (TypeScript) → Logic Layer
+
+Handles the logic and behavior of the component.
+Styles (CSS/SCSS) → Presentation Layer
+
+Defines the styling of the component.
+Creating a Component in Angular
+There are two ways to create a component in Angular:
+
+1. Manually Creating a Component
+You can manually create a component by following these steps:
+
+Create a new folder inside the src/app directory.
+
+Inside the folder, create three files:
+
+example.component.ts (TypeScript file)
+example.component.html (HTML template)
+example.component.css (CSS file)
+
+Define the component in the TypeScript file:
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-example',   // The custom HTML tag for this component
+  templateUrl: './example.component.html', // Path to the HTML file
+  styleUrls: ['./example.component.css']  // Path to the CSS file
+})
+export class ExampleComponent {
+  message: string = 'Hello, Angular!';
+}
+Add content to example.component.html:
+
+<h1>{{ message }}</h1>
+Add styles to example.component.css:
+
+h1 {
+  color: blue;
+}
+Register the component inside app.module.ts:
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { ExampleComponent } from './example/example.component';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    ExampleComponent  // Registering the component
+  ],
+  imports: [BrowserModule],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+Use the component in app.component.html:
+
+<app-example></app-example>
+
+2. Generating a Component Using Angular CLI
+
+Angular provides a simple command to generate a component using the CLI:
+
+ng generate component example
+or
+
+ng g c example
+
+This command creates the following files inside the src/app/example/ folder:
+
+example.component.ts
+example.component.html
+example.component.css
+example.component.spec.ts (for unit testing)
+
+The component will be automatically registered inside app.module.ts.
+
+Component Lifecycle in Angular
+
+Each component in Angular has a lifecycle that consists of different phases from initialization to destruction. These phases are handled using lifecycle hooks such as:
+
+ngOnInit() - Called when the component is initialized.
+ngOnChanges() - Called when input properties change.
+ngDoCheck() - Called during every change detection cycle.
+ngOnDestroy() - Called just before the component is destroyed.
+Example:
+
+import { Component, OnInit, OnDestroy } from '@angular/core';
+
+@Component({
+  selector: 'app-lifecycle',
+  template: '<p>Lifecycle Component Loaded</p>'
+})
+export class LifecycleComponent implements OnInit, OnDestroy {
+
+  constructor() {
+    console.log('Constructor Called');
+  }
+
+  ngOnInit() {
+    console.log('ngOnInit Called');
+  }
+
+  ngOnDestroy() {
+    console.log('ngOnDestroy Called');
+  }
+}
+Key Takeaways
+✅ A component is a basic building block in Angular.
+✅ Components are defined using the @Component() decorator.
+✅ Each component consists of an HTML template, CSS styles, and a TypeScript class.
+✅ Components can be manually created or generated using the Angular CLI.
+✅ Components follow a lifecycle that can be managed using lifecycle hooks.
+
+
+Data binding :
+
+Data binding is the mechanism in Angular that allows synchronization of data between the component (TypeScript) and the view (HTML). It enables dynamic updates in the UI when data changes in the component and vice versa.
+
+Angular provides different types of data binding:
+
+Interpolation ({{}})
+Property Binding ([])
+Event Binding (())
+Two-way Binding ([()])
+Attribute Binding (attr)
+Class and Style Binding ([class], [style])
+1. Interpolation ({{}})
+Interpolation is the simplest form of data binding where we bind component data to the template.
+
+Example:
+Component (TypeScript)
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-example',
+  templateUrl: './example.component.html'
+})
+export class ExampleComponent {
+  message: string = 'Hello, Angular!';
+}
+Template (HTML)
+<h1>{{ message }}</h1>
+Output:
+Hello, Angular!
+
+📌 Use Case:
+
+Displaying values dynamically in the HTML template.
+
+2. Property Binding ([])
+Property binding is used to bind a property of an HTML element to a property of the component.
+
+Example:
+Component (TypeScript)
+export class ExampleComponent {
+  imageUrl: string = 'https://angular.io/assets/images/logos/angular/angular.svg';
+}
+Template (HTML)
+<img [src]="imageUrl" alt="Angular Logo">
+Output:
+An image will be displayed using the URL from the component.
+
+📌 Use Case:
+
+Dynamic setting of attributes like src, disabled, readonly, etc.
+
+3. Event Binding (())
+
+Event binding allows the component to respond to user actions such as clicks, key presses, etc.
+
+Example:
+Component (TypeScript)
+export class ExampleComponent {
+  count: number = 0;
+
+  increment() {
+    this.count++;
+  }
+}
+Template (HTML)
+<button (click)="increment()">Click Me</button>
+<p>Count: {{ count }}</p>
+Output:
+When the button is clicked, the count will increase dynamically.
+
+📌 Use Case:
+
+Handling button clicks, user input events, form submissions, etc.
+
+4. Two-Way Binding ([()])
+
+Two-way binding allows data to be updated in both directions – from the component to the template and vice versa.
+
+Example:
+Component (TypeScript)
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-example',
+  templateUrl: './example.component.html'
+})
+export class ExampleComponent {
+  username: string = '';
+}
+Template (HTML)
+<input [(ngModel)]="username" placeholder="Enter name">
+<p>Welcome, {{ username }}!</p>
+Output:
+As the user types in the input field, the value is dynamically updated in the paragraph.
+
+📌 Use Case:
+
+Useful in forms, input fields, and real-time updates.
+🚀 Note: [(ngModel)] requires FormsModule to be imported in app.module.ts
+
+import { FormsModule } from '@angular/forms';
+
+5. Attribute Binding (attr)
+
+Attribute binding is used when we want to dynamically assign values to attributes that are not native DOM properties.
+
+Example:
+Component (TypeScript)
+export class ExampleComponent {
+  tableId: string = 'userTable';
+}
+Template (HTML)
+<table [attr.id]="tableId">
+  <tr>
+    <td>Row 1</td>
+  </tr>
+</table>
+📌 Use Case:
+
+Dynamically setting aria-* attributes, role, and custom attributes.
+
+6. Class and Style Binding ([class], [style])
+
+Class Binding
+Dynamically applies a CSS class to an element.
+
+Example:
+Component (TypeScript)
+export class ExampleComponent {
+  isActive: boolean = true;
+}
+Template (HTML)
+<p [class.active]="isActive">This is a paragraph</p>
+📌 Use Case:
+
+Applying dynamic CSS classes based on conditions.
+Style Binding
+Dynamically applies inline styles.
+
+Example:
+
+Component (TypeScript)
+
+export class ExampleComponent {
+  textColor: string = 'red';
+}
+Template (HTML)
+<p [style.color]="textColor">This text is red</p>
+
+📌 Use Case:
+
+Changing styles dynamically based on component properties.
+
+Advanced Example: Combining Different Bindings
+
+Let's create an interactive counter app combining Interpolation, Property Binding, Event Binding, and Two-way Binding.
+
+Component (TypeScript)
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-counter',
+  templateUrl: './counter.component.html',
+  styleUrls: ['./counter.component.css']
+})
+export class CounterComponent {
+  count: number = 0;
+  incrementBy: number = 1;
+
+  increment() {
+    this.count += this.incrementBy;
+  }
+
+  decrement() {
+    this.count -= this.incrementBy;
+  }
+}
+
+Template (HTML)
+<h2>Counter: {{ count }}</h2>
+
+<label>Increment By: 
+  <input type="number" [(ngModel)]="incrementBy">
+</label>
+
+<button (click)="increment()">Increment</button>
+<button (click)="decrement()">Decrement</button>
+
+CSS (counter.component.css)
+
+button {
+  margin: 5px;
+  padding: 8px 12px;
+  font-size: 16px;
+}
+🔹 Functionality:
+
+The counter increases or decreases based on the input value.
+
+Combines Interpolation ({{ count }}), Two-way Binding ([(ngModel)]), and Event Binding ((click)).
+
+
+String Interpolation :
+
+String Interpolation in Angular is a one-way data binding technique that allows us to bind expressions inside an HTML template. It is represented by double curly braces ({{ }}) and is used to display dynamic content from the component in the template.
+
+It evaluates the expression inside the braces and converts it into a string that is then rendered in the view.
+
+1. Simple Example of String Interpolation
+In this example, we will display a simple string value from the component inside an HTML template.
+
+app.component.ts
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  title = 'Angular String Interpolation Example';
+}
+app.component.html
+<h1>{{ title }}</h1>
+Output:
+👉 Angular String Interpolation Example
+
+2. Using Expressions inside Interpolation
+
+You can also use simple mathematical expressions inside interpolation.
+
+app.component.ts
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+
+export class AppComponent {
+  num1 = 10;
+  num2 = 20;
+}
+
+app.component.html
+
+<p>Sum: {{ num1 + num2 }}</p>
+
+Output:
+👉 Sum: 30
+
+3. Calling a Method inside Interpolation
+
+You can call methods inside interpolation to dynamically calculate values.
+
+app.component.ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  num1 = 15;
+  num2 = 25;
+
+  getSum() {
+    return this.num1 + this.num2;
+  }
+}
+app.component.html
+
+<p>Sum using Method: {{ getSum() }}</p>
+
+Output:
+👉 Sum using Method: 40
+
+4. Using Interpolation with Objects:
+
+You can also use interpolation to display object properties.
+
+app.component.ts
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  user = {
+    name: 'John Doe',
+    age: 30,
+    city: 'New York'
+  };
+}
+
+app.component.html
+
+<p>Name: {{ user.name }}</p>
+<p>Age: {{ user.age }}</p>
+<p>City: {{ user.city }}</p>
+Output:
+👉
+Name: John Doe
+Age: 30
+City: New York
+
+5. Using Interpolation inside Attributes (Binding Alternative)
+
+Interpolation can be used inside HTML attributes like alt, title, and value.
+
+app.component.ts
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  imageUrl = 'https://angular.io/assets/images/logos/angular/angular.svg';
+  imageTitle = 'Angular Logo';
+}
+app.component.html
+<img src="{{ imageUrl }}" alt="Angular Logo" title="{{ imageTitle }}">
+However, for attributes like src and href, it is recommended to use property binding ([src] instead of src="{{}}").
+
+6. Using Interpolation inside HTML Events
+Interpolation cannot be used directly inside event bindings like (click), but it can be used inside the handler function.
+
+app.component.ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  counter = 0;
+
+  increment() {
+    this.counter++;
+  }
+}
+app.component.html
+<button (click)="increment()">Click Me</button>
+<p>Button clicked: {{ counter }} times</p>
+Output:
+When you click the button, the counter will increment dynamically.
+
+7. Using Interpolation inside a Loop (ngFor)
+You can display dynamic values inside an *ngFor loop.
+
+app.component.ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  fruits = ['Apple', 'Banana', 'Mango', 'Grapes'];
+}
+
+app.component.html
+
+<ul>
+  <li *ngFor="let fruit of fruits">{{ fruit }}</li>
+</ul>
+
+Output:
+
+Apple
+Banana
+Mango
+Grapes
+
+8. Advanced Example: Using Interpolation with Nested Objects & Loops
+
+Here is a more advanced example where we use interpolation inside a loop with a nested object.
+
+app.component.ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  employees = [
+    { name: 'Alice', age: 25, position: 'Developer' },
+    { name: 'Bob', age: 28, position: 'Designer' },
+    { name: 'Charlie', age: 30, position: 'Manager' }
+  ];
+}
+app.component.html
+<table border="1">
+  <tr>
+    <th>Name</th>
+    <th>Age</th>
+    <th>Position</th>
+  </tr>
+  <tr *ngFor="let emp of employees">
+    <td>{{ emp.name }}</td>
+    <td>{{ emp.age }}</td>
+    <td>{{ emp.position }}</td>
+  </tr>
+</table>
+Output:
+
+Name	Age	Position
+Alice	25	Developer
+Bob	28	Designer
+Charlie	30	Manager
+Key Points About String Interpolation
+✅ One-way binding → Data flows from the component to the template.
+✅ Uses double curly braces ({{}}).
+✅ Supports expressions, function calls, and object properties.
+✅ Cannot be used inside event bindings like (click).
+✅ For dynamic attributes, prefer property binding ([src], [href], etc.).
+
+
+Property Binding :
+
+Property Binding in Angular is a technique that allows you to bind data from a component's TypeScript class to an HTML element's property in the template. It enables dynamic data binding, making the UI responsive to changes in the component.
+
+Syntax of Property Binding:
+
+Property binding is done using square brackets [].
+
+[property]="expression"
+
+Here, property refers to the property of the HTML element, and expression is a value from the component's 
+
+TypeScript file.
+
+Types of Property Binding with Examples
+
+1. Basic Property Binding (String Interpolation Alternative)
+
+Example: Binding Text Content
+// app.component.ts
+export class AppComponent {
+  title = "Hello Angular!";
+}
+<!-- app.component.html -->
+<h1 [innerText]="title"></h1>
+🔹 Instead of using {{title}}, we bind the innerText property.
+
+2. Property Binding with Input Fields :
+
+Example: Binding a Value to an Input Field
+export class AppComponent {
+  username = "AngularUser";
+}
+<input [value]="username">
+🔹 The input field will be prefilled with "AngularUser", and if username changes in the component, it will reflect in the input.
+
+3. Binding Boolean Attributes (e.g., Disabled, Hidden)
+
+Example: Disabling a Button Dynamically
+export class AppComponent {
+  isDisabled = true;
+}
+<button [disabled]="isDisabled">Click Me</button>
+🔹 The button remains disabled because isDisabled is true.
+
+4. Binding Class Properties :
+
+Example: Applying a Class Dynamically 
+
+export class AppComponent {
+  isHighlighted = true;
+}
+<p [class.highlight]="isHighlighted">This is a highlighted text</p>
+/* styles.css */
+.highlight {
+  background-color: yellow;
+}
+🔹 If isHighlighted is true, the class .highlight is applied.
+
+5. Binding Inline Styles Dynamically
+
+Example: Changing Font Size Based on Component Value
+export class AppComponent {
+  fontSize = "20px";
+}
+<p [style.fontSize]="fontSize">Dynamic Font Size</p>
+🔹 The paragraph text size will be 20px, and if fontSize is updated, the size changes dynamically.
+
+6. Property Binding with Objects :
+
+Example: Passing an Object to a Component
+export class AppComponent {
+  user = { name: "John", age: 25 };
+}
+<app-user [userData]="user"></app-user>
+🔹 The user object is passed to the userData input of the <app-user> component.
+
+7. Binding Image Source Dynamically
+
+Example: Changing Image Based on Component Data
+export class AppComponent {
+  imageUrl = "https://angular.io/assets/images/logos/angular/angular.svg";
+}
+<img [src]="imageUrl" alt="Angular Logo">
+🔹 The image source is dynamically set from the component.
+
+8. Two-way Binding (Using Property Binding & Event Binding) :
+
+Property binding only updates the UI when the data changes but does not allow the user to modify the data in the component. To allow modifications, we combine it with event binding using [(ngModel)].
+
+Example: Two-way Data Binding in an Input Field
+import { Component } from "@angular/core";
+
+@Component({
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.css"]
+})
+export class AppComponent {
+  username = "";
+}
+<input [(ngModel)]="username">
+<p>You entered: {{ username }}</p>
+🔹 As the user types, the value updates in the component and reflects immediately.
+
+9. Advanced Example: Toggle Button Using Property Binding
+
+export class AppComponent {
+  isDarkMode = false;
+}
+<button [class.dark-mode]="isDarkMode" (click)="isDarkMode = !isDarkMode">
+
+  Toggle Dark Mode
+
+</button>
+.dark-mode {
+  background-color: black;
+  color: white;
+}
+🔹 Clicking the button toggles dark mode dynamically.
+
+
+One Way & Two way Binding :
+
+Angular provides different types of data binding mechanisms to synchronize the data between the component (TypeScript) and the view (HTML). These are mainly categorized into:
+
+One-Way Binding (Data flows in one direction)
+Two-Way Binding (Data flows in both directions)
+1. One-Way Binding in Angular
+In one-way binding, data flows from the component to the view OR from the view to the component but not both.
+
+Types of One-Way Binding:
+
+Interpolation ({{ }})
+
+Property Binding ([property]="expression" )
+Event Binding ((event)="method()" )
+Example 1: Interpolation ({{ }})
+It binds the component variable to the HTML.
+app.component.ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  title = 'Angular Data Binding';
+}
+app.component.html
+<h1>Welcome to {{ title }}</h1>
+✅ Data flows from component → view (one-way).
+
+Example 2: Property Binding ([property] = "expression" )
+Binds a property of an HTML element to a component variable.
+app.component.ts
+export class AppComponent {
+  imageUrl = 'https://angular.io/assets/images/logos/angular/angular.png';
+}
+app.component.html
+<img [src]="imageUrl" alt="Angular Logo">
+✅ Data flows from component → view (one-way).
+
+Example 3: Event Binding ((event) = "method()")
+Binds an event (like click) to a method in the component.
+app.component.ts
+export class AppComponent {
+  count = 0;
+
+  incrementCount() {
+    this.count++;
+  }
+}
+app.component.html
+<p>Counter: {{ count }}</p>
+<button (click)="incrementCount()">Increment</button>
+✅ Data flows from view → component (one-way).
+
+2. Two-Way Binding in Angular
+In two-way binding, data flows in both directions:
+
+From component to view
+From view to component
+Example 4: Two-Way Binding using [(ngModel)]
+Uses ngModel directive to sync input fields with component properties.
+Step 1: Import FormsModule
+Modify app.module.ts:
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';  // Import FormsModule
+import { AppComponent } from './app.component';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule, FormsModule],  // Add FormsModule here
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+app.component.ts
+export class AppComponent {
+  name = '';
+}
+app.component.html
+<input [(ngModel)]="name" placeholder="Enter your name">
+<p>Hello, {{ name }}!</p>
+✅ Data is updated in both directions:
+
+Typing in the input updates name in the component.
+Changing name in the component updates the input field.
+
+Advanced Example: Real-Time Form with Two-Way Binding
+
+Let's build an advanced example where a form updates in real time using two-way binding.
+
+app.component.ts
+export class AppComponent {
+  user = {
+    firstName: '',
+    lastName: '',
+    email: ''
+  };
+
+  submitForm() {
+    console.log('User Data:', this.user);
+  }
+}
+app.component.html
+<form (submit)="submitForm()">
+  <label>First Name:</label>
+  <input [(ngModel)]="user.firstName" name="firstName">
+  
+  <label>Last Name:</label>
+  <input [(ngModel)]="user.lastName" name="lastName">
+  
+  <label>Email:</label>
+  <input [(ngModel)]="user.email" name="email">
+  
+  <button type="submit">Submit</button>
+</form>
+
+<h3>Live Preview:</h3>
+<p>First Name: {{ user.firstName }}</p>
+<p>Last Name: {{ user.lastName }}</p>
+<p>Email: {{ user.email }}</p>
+
+
+Event Binding :
+
+Event Binding in Angular is a way to handle user interactions such as clicks, keypresses, mouse movements, and more. It allows you to listen to events and execute logic when an event occurs.
+
+Syntax of Event Binding
+<button (click)="onClick()">Click Me</button>
+(eventName) is the event to listen for (e.g., click).
+"onClick()" is the method in the TypeScript file to execute when the event occurs.
+
+1. Simple Event Binding Example (Click Event)
+
+Example: Button Click
+
+HTML (app.component.html)
+
+<button (click)="showMessage()">Click Me</button>
+<p>{{ message }}</p>
+TypeScript (app.component.ts)
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  message = '';
+
+  showMessage() {
+    this.message = 'Button Clicked!';
+  }
+}
+Explanation:
+
+Clicking the button updates the message variable, which gets reflected in the UI.
+
+2. Passing Parameters to the Event Handler
+You can pass data from the template to the event handler.
+
+Example: Passing a Custom Message
+HTML
+
+<button (click)="showMessage('Hello Angular!')">Click Me</button>
+<p>{{ message }}</p>
+TypeScript
+
+showMessage(msg: string) {
+  this.message = msg;
+}
+Explanation:
+
+The method showMessage(msg: string) receives a string parameter and updates the message.
+
+3. Using $event Object in Event Binding
+
+You can access the event object in event binding using $event.
+
+Example: Logging Mouse Events
+HTML
+
+<button (click)="logEvent($event)">Click Me</button>
+TypeScript
+
+logEvent(event: Event) {
+  console.log('Event Object:', event);
+}
+Explanation:
+
+$event provides details about the event, such as the event type, target, and timestamp.
+
+4. Keyup Event Binding
+
+You can listen to keyboard events like keyup, keydown, etc.
+
+Example: Display Input Text in Real-Time
+HTML
+
+<input type="text" (keyup)="onKey($event)" placeholder="Type something..." />
+<p>{{ typedText }}</p>
+TypeScript
+
+typedText = '';
+
+onKey(event: KeyboardEvent) {
+  this.typedText = (event.target as HTMLInputElement).value;
+}
+Explanation:
+
+The keyup event captures the input value as the user types.
+
+5. Two-Way Binding with ngModel (Alternative)
+
+Instead of manually capturing keyup, Angular provides ngModel for two-way binding.
+
+Example: Using ngModel
+HTML
+
+<input type="text" [(ngModel)]="typedText" placeholder="Type something..." />
+<p>{{ typedText }}</p>
+
+TypeScript
+
+typedText = '';
+
+Explanation:
+
+[(ngModel)] keeps the input field and variable in sync automatically.
+
+6. Event Binding with Mouse Events
+
+Angular supports various mouse events like mouseenter, mouseleave, etc.
+
+Example: Mouse Enter and Leave
+HTML
+
+<div (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()" style="width: 200px; height: 100px; background: lightblue;">
+  Hover over me
+</div>
+<p>{{ message }}</p>
+TypeScript
+
+message = '';
+
+onMouseEnter() {
+  this.message = 'Mouse Entered!';
+}
+
+onMouseLeave() {
+  this.message = 'Mouse Left!';
+}
+Explanation:
+
+Changes the message when the mouse enters or leaves the div.
+7. Prevent Default Behavior
+Sometimes, you may want to prevent the default behavior of an event.
+
+Example: Preventing Form Submission
+HTML
+
+<form (submit)="onSubmit($event)">
+  <input type="text" />
+  <button type="submit">Submit</button>
+</form>
+TypeScript
+
+onSubmit(event: Event) {
+  event.preventDefault();
+  console.log('Form submission prevented!');
+}
+Explanation:
+
+event.preventDefault() prevents the form from actually submitting.
+
+8. Listening to Custom Events (Using @Output & EventEmitter)
+
+In Angular, child components can emit events to the parent using @Output.
+
+Example: Child to Parent Communication
+
+Child Component (child.component.ts)
+
+import { Component, EventEmitter, Output } from '@angular/core';
+
+@Component({
+  selector: 'app-child',
+  template: `<button (click)="sendMessage()">Send Message</button>`
+})
+export class ChildComponent {
+  @Output() messageEvent = new EventEmitter<string>();
+
+  sendMessage() {
+    this.messageEvent.emit('Hello from Child Component!');
+  }
+}
+Parent Component (app.component.html)
+<app-child (messageEvent)="receiveMessage($event)"></app-child>
+<p>{{ receivedMessage }}</p>
+Parent Component (app.component.ts)
+receivedMessage = '';
+
+receiveMessage(message: string) {
+  this.receivedMessage = message;
+}
+Explanation:
+
+The child component emits a message, which the parent component captures.
+
+9. Event Binding with HostListener (For Directives)
+
+The HostListener decorator allows event binding inside directives.
+
+Example: Custom Directive for Background Change on Click
+Directive (highlight.directive.ts)
+import { Directive, ElementRef, HostListener } from '@angular/core';
+
+@Directive({
+  selector: '[appHighlight]'
+})
+export class HighlightDirective {
+  constructor(private el: ElementRef) {}
+
+  @HostListener('click') onClick() {
+    this.el.nativeElement.style.backgroundColor = 'yellow';
+  }
+}
+Usage in HTML
+<p appHighlight>Click me to highlight!</p>
+Explanation:
+
+Clicking the element changes its background color using the directive.
+Summary
+Event Type	Example Usage
+Click Event	(click)="onClick()"
+Passing Arguments	(click)="onClick('data')"
+$event Object	(click)="onClick($event)"
+Keyup Event	(keyup)="onKey($event)"
+Mouse Events	(mouseenter)="onEnter()"
+Prevent Default	(submit)="onSubmit($event)"
+Custom Events	@Output() messageEvent = new EventEmitter<string>()
+HostListener	@HostListener('click')
+
+

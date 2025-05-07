@@ -1,0 +1,765 @@
+Understanding Directives in Angular :
+
+Directives in Angular are special markers in the DOM that tell Angular to manipulate elements, components, or attributes. They are used to extend the functionality of HTML and can be classified into three main types:
+
+Component Directives
+Structural Directives
+Attribute Directives
+
+Let's go through each type with examples, starting from basic to advanced.
+
+1️⃣ Component Directives
+A component itself is a directive with a template. Every component you create in Angular is essentially a directive that controls a view.
+
+Example - Basic Component Directive
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-hello',
+  template: `<h1>Hello, Angular Directives!</h1>`
+})
+export class HelloComponent { }
+
+Usage in HTML:
+
+<app-hello></app-hello>
+
+The <app-hello> tag is a directive that inserts the component’s template into the DOM.
+
+2️⃣ Structural Directives
+
+Structural directives change the structure of the DOM by adding or removing elements.
+
+2.1 *ngIf - Condition-Based Rendering
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-ngif-example',
+  template: `
+    <button (click)="toggleMessage()">Toggle Message</button>
+    <p *ngIf="showMessage">Hello, This is a Structural Directive Example!</p>
+  `
+})
+export class NgIfExampleComponent {
+  showMessage = true;
+  
+  toggleMessage() {
+    this.showMessage = !this.showMessage;
+  }
+}
+
+If showMessage is true, the <p> tag is rendered; otherwise, it is removed from the DOM.
+
+2.2 *ngFor - Looping Over Data
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-ngfor-example',
+  template: `
+    <ul>
+      <li *ngFor="let item of items; let i = index">
+        {{ i + 1 }}. {{ item }}
+      </li>
+    </ul>
+  `
+})
+export class NgForExampleComponent {
+  items = ['Apple', 'Banana', 'Cherry'];
+}
+Iterates over the items array and dynamically generates <li> elements.
+
+2.3 *ngSwitch - Multiple Conditions
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-ngswitch-example',
+  template: `
+    <div [ngSwitch]="fruit">
+      <p *ngSwitchCase="'Apple'">🍎 Apple selected</p>
+      <p *ngSwitchCase="'Banana'">🍌 Banana selected</p>
+      <p *ngSwitchDefault>🍏 Default: Select a fruit</p>
+    </div>
+  `
+})
+export class NgSwitchExampleComponent {
+  fruit = 'Apple';
+}
+
+Depending on the value of fruit, different content is displayed.
+
+3️⃣ Attribute Directives
+
+Attribute directives change the behavior or appearance of an element.
+
+3.1 ngClass - Dynamically Assigning Classes
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-ngclass-example',
+  template: `
+    <button [ngClass]="{ 'active': isActive }" (click)="toggleActive()">Toggle Class</button>
+  `,
+  styles: [
+    `.active { background-color: green; color: white; }`
+  ]
+})
+export class NgClassExampleComponent {
+  isActive = false;
+
+  toggleActive() {
+    this.isActive = !this.isActive;
+  }
+}
+Adds/removes the .active class dynamically based on isActive.
+
+3.2 ngStyle - Applying Dynamic Styles
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-ngstyle-example',
+  template: `
+    <p [ngStyle]="{'color': textColor, 'font-size.px': fontSize}">
+      Dynamic Styling with ngStyle
+    </p>
+    <button (click)="changeStyle()">Change Style</button>
+  `
+})
+export class NgStyleExampleComponent {
+  textColor = 'blue';
+  fontSize = 20;
+
+  changeStyle() {
+    this.textColor = this.textColor === 'blue' ? 'red' : 'blue';
+    this.fontSize = this.fontSize === 20 ? 25 : 20;
+  }
+}
+
+Dynamically changes text color and font size when the button is clicked.
+4️⃣ Custom Directives (Advanced)
+
+You can create your own custom directives to extend Angular's functionality.
+
+4.1 Custom Attribute Directive - Change Background Color
+
+import { Directive, ElementRef, HostListener, Input } from '@angular/core';
+
+@Directive({
+  selector: '[appHighlight]'
+})
+export class HighlightDirective {
+  @Input() appHighlight = 'yellow';
+
+  constructor(private el: ElementRef) {}
+
+  @HostListener('mouseenter') onMouseEnter() {
+    this.el.nativeElement.style.backgroundColor = this.appHighlight;
+  }
+
+  @HostListener('mouseleave') onMouseLeave() {
+    this.el.nativeElement.style.backgroundColor = null;
+  }
+}
+Usage in HTML:
+
+<p appHighlight="lightblue">Hover over me to change background color.</p>
+This directive changes the background color when the user hovers over an element.
+
+4.2 Custom Structural Directive - Show Element After Delay
+
+import { Directive, Input, TemplateRef, ViewContainerRef } from '@angular/core';
+
+@Directive({
+  selector: '[appDelay]'
+})
+export class DelayDirective {
+  @Input() set appDelay(time: number) {
+    setTimeout(() => {
+      this.viewContainer.createEmbeddedView(this.templateRef);
+    }, time);
+  }
+
+  constructor(private templateRef: TemplateRef<any>, private viewContainer: ViewContainerRef) {}
+}
+Usage in HTML:
+
+<p *appDelay="2000">This text appears after 2 seconds.</p>
+The <p> tag will be inserted into the DOM after 2 seconds.
+
+Summary
+
+Directive Type	Description	Example
+Component	A directive with a template.	<app-hello></app-hello>
+Structural (*ngIf)	Adds/removes elements conditionally.	<p *ngIf="isVisible">Hello</p>
+Structural (*ngFor)	Loops over a list and renders elements.	<li *ngFor="let item of items">{{item}}</li>
+Structural (*ngSwitch)	Renders elements based on a value.	<div *ngSwitchCase="'A'">A selected</div>
+Attribute (ngClass)	Dynamically applies CSS classes.	<button [ngClass]="{'active': isActive}">Click</button>
+Attribute (ngStyle)	Dynamically applies inline styles.	<p [ngStyle]="{'color': 'blue'}">Text</p>
+Custom Attribute	Custom behavior applied to elements.	<p appHighlight="yellow">Hover me</p>
+Custom Structural	Dynamically adds/removes elements.	<p *appDelay="2000">Delayed</p>
+
+
+
+Structural Directives vs. Attribute Directives in Angular
+
+In Angular, Directives are used to modify the behavior, appearance, or structure of the DOM. They are classified into two main types:
+
+Structural Directives – Used to change the structure of the DOM (e.g., adding or removing elements).
+
+Attribute Directives – Used to change the appearance or behavior of an element without altering its structure.
+
+1. Structural Directives
+
+Structural directives modify the DOM by adding, removing, or manipulating elements. They always start with an asterisk (*).
+
+Built-in Structural Directives
+
+*ngIf – Conditionally adds or removes elements.
+*ngFor – Iterates over an array and renders multiple elements.
+*ngSwitch – Displays one element from multiple choices.
+
+Example 1: Using *ngIf (Simple Example)
+
+<button (click)="show = !show">Toggle</button>
+<p *ngIf="show">This paragraph is conditionally displayed.</p>
+export class AppComponent {
+  show = true;
+}
+💡 *ngIf will add or remove the <p> element based on the show boolean.
+
+Example 2: Using *ngFor (Intermediate Example)
+
+<ul>
+  <li *ngFor="let item of items">{{ item }}</li>
+</ul>
+export class AppComponent {
+  items = ['Angular', 'React', 'Vue'];
+}
+💡 *ngFor loops over items and creates a <li> for each entry.
+
+Example 3: Using *ngSwitch (Advanced Example)
+
+<div [ngSwitch]="color">
+  <p *ngSwitchCase="'red'">Red Color Selected</p>
+  <p *ngSwitchCase="'blue'">Blue Color Selected</p>
+  <p *ngSwitchDefault>Select a Color</p>
+</div>
+<button (click)="color='red'">Red</button>
+<button (click)="color='blue'">Blue</button>
+export class AppComponent {
+  color = 'red';
+}
+💡 *ngSwitchCase dynamically selects which block of HTML to display based on color.
+
+Custom Structural Directive (Advanced)
+
+We can create our own structural directive using @Directive and TemplateRef.
+
+Example 4: Creating a Custom *appUnless Directive (Opposite of *ngIf)
+
+import { Directive, Input, TemplateRef, ViewContainerRef } from '@angular/core';
+
+@Directive({
+  selector: '[appUnless]'
+})
+export class UnlessDirective {
+  constructor(private templateRef: TemplateRef<any>, private viewContainer: ViewContainerRef) {}
+
+  @Input() set appUnless(condition: boolean) {
+    if (!condition) {
+      this.viewContainer.createEmbeddedView(this.templateRef);
+    } else {
+      this.viewContainer.clear();
+    }
+  }
+}
+<p *appUnless="isVisible">This will be displayed when isVisible is false.</p>
+<button (click)="isVisible = !isVisible">Toggle</button>
+
+export class AppComponent {
+  isVisible = true;
+}
+💡 This directive renders the element only when the condition is false.
+
+2. Attribute Directives
+
+Attribute directives change the behavior or appearance of an element.
+
+Built-in Attribute Directives
+ngClass – Adds or removes CSS classes dynamically.
+ngStyle – Dynamically applies styles.
+
+Example 5: Using ngClass (Simple Example)
+
+<p [ngClass]="{'active': isActive, 'inactive': !isActive}">This text changes styles</p>
+<button (click)="isActive = !isActive">Toggle Class</button>
+
+export class AppComponent {
+  isActive = true;
+}
+💡 The active class is applied when isActive is true; otherwise, inactive is applied.
+
+Example 6: Using ngStyle (Intermediate Example)
+
+p [ngStyle]="{'color': textColor, 'font-weight': 'bold'}">Styled Text</p>
+<button (click)="textColor = 'blue'">Blue</button>
+<button (click)="textColor = 'red'">Red</button>
+export class AppComponent {
+  textColor = 'black';
+}
+💡 Dynamically changes the text color.
+
+Custom Attribute Directive (Advanced)
+
+We can create our own attribute directive to manipulate an element’s behavior.
+
+Example 7: Creating a Custom appHighlight Directive
+
+import { Directive, ElementRef, HostListener, Input } from '@angular/core';
+
+@Directive({
+  selector: '[appHighlight]'
+})
+export class HighlightDirective {
+  @Input() appHighlight = '';
+
+  constructor(private el: ElementRef) {}
+
+  @HostListener('mouseenter') onMouseEnter() {
+    this.el.nativeElement.style.backgroundColor = this.appHighlight || 'yellow';
+  }
+
+  @HostListener('mouseleave') onMouseLeave() {
+    this.el.nativeElement.style.backgroundColor = 'transparent';
+  }
+}
+<p appHighlight="lightblue">Hover over me to see highlight</p>
+💡 The background color changes when hovering over the text.
+
+Summary: Key Differences
+
+Feature	Structural Directives	Attribute Directives
+Purpose	Modify DOM structure	Modify appearance or behavior
+Syntax	Uses * (e.g., *ngIf, *ngFor)	Uses [] (e.g., [ngClass], [ngStyle])
+Affects	Adds/removes elements	Modifies existing elements
+Example	*ngIf="condition"	[ngClass]="{'class': condition}"
+
+
+
+ngIf to Output Data Conditionally in Angular
+
+Angular's *ngIf directive is used to conditionally include or exclude elements from the DOM based on a boolean condition. If the condition is true, the element is added to the DOM; otherwise, it is removed.
+
+Basic Syntax
+
+<p *ngIf="isVisible">This paragraph is visible!</p>
+
+Here, the paragraph will only be rendered if isVisible is true.
+
+Simple Examples
+
+1. Basic Example (Toggle Visibility)
+
+Component (TypeScript)
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  isVisible = true;
+
+  toggleVisibility() {
+    this.isVisible = !this.isVisible;
+  }
+}
+
+Template (HTML)
+
+<button (click)="toggleVisibility()">Toggle Text</button>
+<p *ngIf="isVisible">Hello, this is visible!</p>
+
+🔹 Clicking the button toggles the visibility of the paragraph.
+
+2. Using ngIf with else Block
+
+<p *ngIf="isVisible; else elseBlock">This is visible</p>
+<ng-template #elseBlock>
+  <p>This is hidden</p>
+</ng-template>
+🔹 If isVisible is false, the content inside <ng-template> is displayed.
+
+3. Using ngIf with then and else
+
+<ng-container *ngIf="isVisible; then thenBlock; else elseBlock"></ng-container>
+
+<ng-template #thenBlock>
+  <p>This is the THEN block (visible).</p>
+</ng-template>
+
+<ng-template #elseBlock>
+  <p>This is the ELSE block (hidden).</p>
+</ng-template>
+🔹 This approach improves readability when working with complex templates.
+
+Advanced Examples
+
+4. ngIf with && (Multiple Conditions)
+
+<p *ngIf="isUserLoggedIn && hasPermission">Welcome, you have access!</p>
+🔹 This paragraph is displayed only if both isUserLoggedIn and hasPermission are true.
+
+5. ngIf with async Pipe (Observables)
+
+Component (TypeScript)
+
+import { Component } from '@angular/core';
+import { Observable, of } from 'rxjs';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  user$: Observable<boolean> = of(true); // Simulating an API response
+}
+
+Template (HTML)
+
+<p *ngIf="user$ | async">User is logged in!</p>
+🔹 The async pipe subscribes to the user$ observable and updates the DOM when the value changes.
+
+6. ngIf with Dynamic List Rendering
+
+Component (TypeScript)
+
+export class AppComponent {
+  items = ['Item 1', 'Item 2', 'Item 3'];
+}
+
+Template (HTML)
+
+<ul *ngIf="items.length > 0; else noItems">
+  <li *ngFor="let item of items">{{ item }}</li>
+</ul>
+
+<ng-template #noItems>
+  <p>No items found!</p>
+</ng-template>
+🔹 The list is displayed if items.length > 0; otherwise, a message appears.
+
+
+
+
+Understanding *ngIf with else in Angular
+
+The *ngIf directive in Angular is used to conditionally display elements in the DOM. When combined with else, it allows us to show alternative content if the condition is false.
+
+Basic Example - Simple ngIf with else
+In the simplest form, *ngIf checks a condition and displays content accordingly. If the condition is false, the else block is rendered.
+
+Example: Show/Hide Message
+HTML:
+
+<div *ngIf="isLoggedIn; else loggedOutBlock">
+  <p>Welcome, User!</p>
+</div>
+
+<ng-template #loggedOutBlock>
+  <p>Please log in.</p>
+</ng-template>
+
+TypeScript:
+
+export class AppComponent {
+  isLoggedIn = false;
+}
+✅ Output:
+
+If isLoggedIn = true: "Welcome, User!" is displayed.
+If isLoggedIn = false: "Please log in." is displayed.
+Intermediate Example - ngIf with then and else
+You can explicitly define both the then and else templates.
+
+Example: Conditional Loading Message
+
+HTML:
+
+<div *ngIf="dataLoaded; then dataTemplate; else loadingTemplate"></div>
+
+<ng-template #dataTemplate>
+  <p>Data loaded successfully!</p>
+</ng-template>
+
+<ng-template #loadingTemplate>
+  <p>Loading, please wait...</p>
+</ng-template>
+
+TypeScript:
+
+export class AppComponent {
+  dataLoaded = false;
+
+  constructor() {
+    setTimeout(() => {
+      this.dataLoaded = true;
+    }, 3000);
+  }
+}
+✅ Output:
+
+For 3 seconds: "Loading, please wait..."
+
+After 3 seconds: "Data loaded successfully!"
+
+Advanced Example - ngIf with Dynamic Content in else
+
+We can pass dynamic data into the else block using variables.
+
+Example: Display Product List or No Data Message
+
+HTML:
+
+<div *ngIf="products.length > 0; else noProductsTemplate">
+  <ul>
+    <li *ngFor="let product of products">{{ product }}</li>
+  </ul>
+</div>
+
+<ng-template #noProductsTemplate>
+  <p>No products available.</p>
+</ng-template>
+
+TypeScript:
+
+export class AppComponent {
+  products: string[] = [];
+
+  addProduct() {
+    this.products.push("New Product");
+  }
+}
+✅ Output:
+
+If products has items: Displays the list of products.
+If products is empty: Shows "No products available."
+
+Expert-Level Example - Nested ngIf with else
+
+You can nest ngIf conditions with multiple else templates.
+
+Example: Show Different Messages Based on Role
+HTML:
+
+<div *ngIf="userRole === 'admin'; else checkModerator">
+  <p>Welcome, Admin! You have full access.</p>
+</div>
+
+<ng-template #checkModerator>
+  <div *ngIf="userRole === 'moderator'; else checkUser">
+    <p>Welcome, Moderator! You have limited access.</p>
+  </div>
+</ng-template>
+
+<ng-template #checkUser>
+  <p>Welcome, Guest! Please log in.</p>
+</ng-template>
+
+TypeScript:
+
+export class AppComponent {
+  userRole = 'guest'; // Change this to 'admin' or 'moderator' to see different outputs
+}
+✅ Output:
+
+If userRole = 'admin': "Welcome, Admin! You have full access."
+If userRole = 'moderator': "Welcome, Moderator! You have limited access."
+If userRole = 'guest': "Welcome, Guest! Please log in."
+
+
+
+Styling Elements Dynamically with ngStyle & ngClass in Angular
+
+Angular provides two powerful directives for dynamically applying styles and classes to elements:
+
+ngStyle: Used to apply inline CSS styles dynamically.
+ngClass: Used to apply one or more CSS classes conditionally.
+
+1️⃣ ngStyle - Applying Inline Styles Dynamically
+The ngStyle directive allows you to dynamically bind styles to an HTML element.
+
+✅ Example 1: Simple Inline Styling
+
+<p [ngStyle]="{'color': 'blue', 'font-size': '20px'}">
+  This is a blue paragraph with 20px font size.
+</p>
+✅ Explanation:
+
+The ngStyle directive binds an object containing CSS property-value pairs.
+
+✅ Example 2: Dynamic Styling using Component Variables
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <p [ngStyle]="styleObject">
+      This paragraph's style is applied dynamically.
+    </p>
+    <button (click)="changeStyle()">Change Style</button>
+  `,
+})
+export class AppComponent {
+  styleObject = {
+    'color': 'red',
+    'font-size': '18px',
+    'background-color': 'lightgray'
+  };
+
+  changeStyle() {
+    this.styleObject = {
+      'color': 'green',
+      'font-size': '22px',
+      'background-color': 'yellow'
+    };
+  }
+}
+✅ Explanation:
+
+Styles are stored in an object (styleObject) and dynamically updated when the button is clicked.
+
+✅ Example 3: Conditional Styling using Component Variables
+
+<p [ngStyle]="{'color': isActive ? 'green' : 'gray'}">
+  This text changes color based on a boolean value.
+</p>
+<button (click)="toggleActive()">Toggle Color</button>
+
+isActive = true;
+
+toggleActive() {
+  this.isActive = !this.isActive;
+}
+✅ Explanation:
+
+When isActive is true, the text is green; otherwise, it is gray.
+
+2️⃣ ngClass - Applying CSS Classes Dynamically
+
+The ngClass directive allows you to conditionally apply CSS classes to an element.
+
+✅ Example 1: Applying a Single Class
+
+<p [ngClass]="'highlight'">This text has a static class.</p>
+
+.highlight {
+  color: white;
+  background-color: blue;
+  padding: 5px;
+}
+✅ Explanation:
+
+The ngClass directive applies the highlight class to the paragraph.
+
+✅ Example 2: Applying Multiple Classes Dynamically
+
+<p [ngClass]="{'highlight': isHighlighted, 'bold': isBold}">
+  This text changes styles dynamically.
+</p>
+<button (click)="toggleHighlight()">Toggle Highlight</button>
+<button (click)="toggleBold()">Toggle Bold</button>
+
+isHighlighted = false;
+isBold = false;
+
+toggleHighlight() {
+  this.isHighlighted = !this.isHighlighted;
+}
+
+toggleBold() {
+  this.isBold = !this.isBold;
+}
+
+.highlight {
+  background-color: yellow;
+}
+
+.bold {
+  font-weight: bold;
+}
+✅ Explanation:
+
+highlight and bold classes are applied conditionally using boolean variables.
+
+✅ Example 3: Applying Multiple Classes Using an Array
+
+<p [ngClass]="['highlight', 'bold']">This text has multiple classes.</p>
+
+✅ Explanation:
+
+You can pass an array of class names directly.
+
+✅ Example 4: Combining ngStyle & ngClass
+
+<p [ngClass]="{'highlight': isHighlighted}" [ngStyle]="{'font-size': fontSize}">
+  This text has both dynamic class and styles.
+</p>
+<button (click)="increaseFontSize()">Increase Font Size</button>
+
+isHighlighted = true;
+fontSize = '16px';
+
+increaseFontSize() {
+  this.fontSize = this.fontSize === '16px' ? '22px' : '16px';
+}
+✅ Explanation:
+
+ngClass applies highlight class dynamically.
+ngStyle changes font-size when the button is clicked.
+
+🎯 Advanced Example: Applying Styles & Classes Based on User Input
+
+<div>
+  <input type="text" placeholder="Enter color" [(ngModel)]="textColor" />
+  <button (click)="applyColor()">Apply Color</button>
+  <p [ngStyle]="{'color': textColor, 'font-size': textSize + 'px'}" [ngClass]="{'italic': isItalic}">
+    Dynamic styling based on user input!
+  </p>
+</div>
+
+textColor = 'black';
+textSize = 16;
+isItalic = false;
+
+applyColor() {
+  this.isItalic = !this.isItalic;
+}
+
+.italic {
+  font-style: italic;
+}
+✅ Explanation:
+
+Users can enter a color in the input box, and it applies to the paragraph dynamically.
+
+The text size is controlled using ngStyle, and the italic style toggles using ngClass.
+✅ Key Takeaways
+Use ngStyle when applying inline styles dynamically.
+Use ngClass when applying one or more CSS classes conditionally.
+
+Both directives can be used together for more flexible styling.
+
+
+
+
+

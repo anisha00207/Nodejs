@@ -1,0 +1,1637 @@
+Working with Angular Material: Angular Material is a UI component library for Angular applications. It provides pre-built, customizable, and responsive UI components following Google's Material Design guidelines.
+
+📌 Step 1: Set Up an Angular Project
+Ensure you have Angular CLI installed. If not, install it:
+
+npm install -g @angular/cli
+
+Create a new Angular project:
+
+ng new angular-material-demo
+Navigate to the project directory:
+
+cd angular-material-demo
+Run the project to verify the setup:
+
+ng serve -o
+📌 Step 2: Install Angular Material
+Add Angular Material to your project:
+
+ng add @angular/material
+
+✅ During installation, Angular CLI will prompt you to:
+
+Choose a Material Theme (e.g., Indigo/Pink).
+
+Set up global typography and animations – Choose "Yes".
+
+Enable browser animations – Choose "Yes".
+
+📌 Step 3: Import Angular Material Modules
+
+Open src/app/app.module.ts and import the required Material modules.
+
+Example: Import Button and Input modules:
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+
+// Angular Material Modules
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule, // Required for Angular Material animations
+    MatButtonModule,
+    MatInputModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+📌 Step 4: Add Angular Material Components
+
+Open src/app/app.component.html and use Angular Material components.
+
+Example: Button and Input:
+
+<div class="container">
+  <h2>Angular Material Demo</h2>
+
+  <!-- Material Input -->
+  <mat-form-field appearance="outline">
+    <mat-label>Username</mat-label>
+    <input matInput placeholder="Enter your username">
+  </mat-form-field>
+
+  <!-- Material Button -->
+  <button mat-raised-button color="primary">Submit</button>
+</div>
+
+📌 Step 5: Apply Material Styling
+Ensure the Material theme is applied in angular.json:
+
+"styles": [
+  "src/styles.css",
+  "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css"
+]
+You can also use custom Material themes if required.
+
+📌 Step 6: Run and Verify the Application
+Start your Angular application:
+
+ng serve -o
+
+You should see a Material Input and Button styled using Angular Material.
+
+📌 Step 7: Using More Angular Material Components
+
+Here are some commonly used Angular Material components:
+
+✅ 1. Material Toolbar
+
+Add a toolbar at the top:
+
+<mat-toolbar color="primary">
+  <span>My Angular Material App</span>
+</mat-toolbar>
+Import the MatToolbarModule:
+
+import { MatToolbarModule } from '@angular/material/toolbar';
+
+✅ 2. Material Card
+
+Add a card layout:
+
+<mat-card>
+  <mat-card-title>Welcome</mat-card-title>
+  <mat-card-content>This is an Angular Material card.</mat-card-content>
+</mat-card>
+Import the MatCardModule:
+
+import { MatCardModule } from '@angular/material/card';
+
+✅ 3. Material Dialog
+
+Show a popup dialog.
+
+Create a Dialog Component:
+
+ng generate component my-dialog
+
+In my-dialog.component.ts:
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-my-dialog',
+  template: `<h2 mat-dialog-title>Hello!</h2>
+             <mat-dialog-content>Welcome to Angular Material Dialog.</mat-dialog-content>
+             <mat-dialog-actions>
+               <button mat-button mat-dialog-close>Close</button>
+             </mat-dialog-actions>`
+})
+
+export class MyDialogComponent {}
+
+Open the Dialog in app.component.ts:
+
+import { Component } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MyDialogComponent } from './my-dialog/my-dialog.component';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+})
+export class AppComponent {
+  constructor(public dialog: MatDialog) {}
+
+  openDialog() {
+    this.dialog.open(MyDialogComponent);
+  }
+}
+In app.component.html:
+
+<button mat-raised-button (click)="openDialog()">Open Dialog</button>
+
+Import the MatDialogModule:
+
+import { MatDialogModule } from '@angular/material/dialog';
+
+📌 Step 8: Customize Angular Material Theme
+
+To customize the Material theme:
+
+Create a new SCSS file (e.g., custom-theme.scss):
+
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+$custom-primary: mat.define-palette(mat.$indigo-palette);
+$custom-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
+$custom-theme: mat.define-light-theme($custom-primary, $custom-accent);
+
+@include mat.all-component-themes($custom-theme);
+
+Import the custom theme in angular.json:
+
+"styles": [
+  "src/custom-theme.scss"
+]
+
+📌 Step 9: Angular Material Icons
+
+Add Material Icons to your project by including this in index.html:
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+Use it like this:
+
+<mat-icon>home</mat-icon>
+
+Import the MatIconModule:
+
+import { MatIconModule } from '@angular/material/icon';
+
+📌 Step 10: Angular Material Responsive Layout
+
+Use the Angular Material Flex Layout for a responsive design:
+
+npm install @angular/flex-layout
+
+Import in app.module.ts:
+
+import { FlexLayoutModule } from '@angular/flex-layout';
+
+Example:
+
+<div fxLayout="row" fxLayoutGap="20px">
+  <mat-card fxFlex="50%">Card 1</mat-card>
+  <mat-card fxFlex="50%">Card 2</mat-card>
+</div>
+
+📌 Summary
+
+You have learned how to:
+
+Set up Angular Material in an Angular 19 project.
+
+Use Material Components like buttons, inputs, cards, dialogs, and more.
+
+Apply custom themes and responsive layouts.
+
+
+DropDown Menus :
+
+
+Angular Material provides powerful and flexible components to create dropdown menus using the mat-menu directive. It allows you to create:
+
+Basic Dropdown
+
+Nested Dropdown
+
+Dropdown with Icons
+
+Dropdown with Disabled Items
+
+Custom Actions in Dropdown
+
+Dynamic Dropdown (from array/object)
+
+📌 Step 1: Set Up Angular Material
+If Angular Material is not installed, follow these steps:
+
+Install Angular Material:
+
+ng add @angular/material
+
+Choose a theme and confirm the configurations.
+
+📌 Step 2: Import Required Modules
+
+Add MatMenuModule and MatButtonModule in your app.module.ts:
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    MatMenuModule,
+    MatButtonModule,
+    MatIconModule,
+  ],
+  providers: [],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+
+🟢 1. Basic Dropdown Menu
+
+mat-menu is triggered by the matMenuTriggerFor directive.
+
+app.component.html
+
+<button mat-button [matMenuTriggerFor]="basicMenu">Open Menu</button>
+
+<mat-menu #basicMenu="matMenu">
+  <button mat-menu-item (click)="onSelect('Option 1')">Option 1</button>
+  <button mat-menu-item (click)="onSelect('Option 2')">Option 2</button>
+  <button mat-menu-item (click)="onSelect('Option 3')">Option 3</button>
+</mat-menu>
+
+app.component.ts
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+})
+export class AppComponent {
+  onSelect(option: string) {
+    console.log('Selected:', option);
+  }
+}
+🟠 2. Nested Dropdown Menu
+
+Angular Material allows multi-level dropdowns with the matMenu directive.
+
+app.component.html
+
+<button mat-button [matMenuTriggerFor]="mainMenu">Main Menu</button>
+
+<mat-menu #mainMenu="matMenu">
+  <button mat-menu-item [matMenuTriggerFor]="subMenu">Settings</button>
+  <button mat-menu-item>Profile</button>
+  <button mat-menu-item>Logout</button>
+</mat-menu>
+
+<mat-menu #subMenu="matMenu">
+  <button mat-menu-item>Change Password</button>
+  <button mat-menu-item>Notifications</button>
+</mat-menu>
+
+🔵 3. Dropdown Menu with Icons
+
+You can include icons in your dropdown using mat-icon.
+
+app.component.html
+
+<button mat-button [matMenuTriggerFor]="iconMenu">Menu with Icons</button>
+
+<mat-menu #iconMenu="matMenu">
+  <button mat-menu-item>
+    <mat-icon>home</mat-icon> Home
+  </button>
+  <button mat-menu-item>
+    <mat-icon>settings</mat-icon> Settings
+  </button>
+  <button mat-menu-item>
+    <mat-icon>logout</mat-icon> Logout
+  </button>
+</mat-menu>
+
+🟡 4. Dropdown Menu with Disabled Items
+
+Use the disabled attribute to disable specific menu options.
+
+app.component.html
+
+<button mat-button [matMenuTriggerFor]="disabledMenu">Menu with Disabled Items</button>
+
+<mat-menu #disabledMenu="matMenu">
+  <button mat-menu-item disabled>Disabled Option</button>
+  <button mat-menu-item>Enabled Option</button>
+</mat-menu>
+
+🟣 5. Custom Actions (with Dynamic Data)
+
+Pass dynamic data to the menu and handle it programmatically.
+
+app.component.ts
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+})
+export class AppComponent {
+  items = ['Angular', 'React', 'Vue'];
+
+  onSelect(item: string) {
+    alert(`You selected: ${item}`);
+  }
+}
+
+app.component.html
+
+<button mat-button [matMenuTriggerFor]="dynamicMenu">Dynamic Menu</button>
+
+<mat-menu #dynamicMenu="matMenu">
+  <button mat-menu-item *ngFor="let item of items" (click)="onSelect(item)">
+    {{ item }}
+  </button>
+</mat-menu>
+
+🔴 6. Dropdown in Toolbar/Navigation
+
+Dropdowns can be integrated into Material Toolbars for navigation.
+
+app.component.html
+
+<mat-toolbar color="primary">
+  <span>My App</span>
+  <span class="spacer"></span>
+
+  <button mat-button [matMenuTriggerFor]="profileMenu">Profile</button>
+
+  <mat-menu #profileMenu="matMenu">
+    <button mat-menu-item>Account</button>
+    <button mat-menu-item>Settings</button>
+    <button mat-menu-item>Logout</button>
+  </mat-menu>
+</mat-toolbar>
+
+app.component.css
+
+.spacer {
+  flex: 1;
+}
+📊 Bonus: Customizing Dropdown Position
+
+Use xPosition and yPosition to control menu alignment.
+
+<button mat-button [matMenuTriggerFor]="positionedMenu">Positioned Menu</button>
+
+<mat-menu #positionedMenu="matMenu" xPosition="before" yPosition="above">
+  <button mat-menu-item>Top-Left</button>
+</mat-menu>
+
+📌 Run the Application
+
+ng serve
+
+Navigate to http://localhost:4200 to see the dropdowns in action!
+
+✅ Summary
+In this guide, you learned how to:
+
+Create Basic Dropdowns
+
+Implement Nested Menus
+
+Add Icons to Menus
+
+Disable Items
+
+Use Dynamic Data
+
+Add Menus in Toolbars
+
+Control Menu Position
+
+
+Tab Groups :
+
+
+Angular Material provides a mat-tab-group component that allows you to create tabbed navigation in your Angular applications. This tutorial will guide you through setting up Angular Material Tabs with various use cases.
+
+✅ 1. Set Up Angular Material in Your Angular Project
+If you haven't installed Angular Material yet, follow these steps:
+
+Step 1: Create a New Angular Project (Optional)
+
+ng new angular-tabs-demo
+cd angular-tabs-demo
+
+Step 2: Install Angular Material
+
+ng add @angular/material
+
+Select a theme (e.g., "Prebuilt Indigo/Pink") and choose global typography and animations.
+
+✅ 2. Basic Tab Group Example
+
+📌 app.module.ts – Import Required Modules
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatTabsModule } from '@angular/material/tabs';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule, BrowserAnimationsModule, MatTabsModule],
+  providers: [],
+  bootstrap: [AppComponent],
+})
+
+export class AppModule {}
+
+📌 app.component.ts – Basic Tab Structure
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+})
+export class AppComponent {}
+
+📌 app.component.html – Basic mat-tab-group
+
+<h2>Basic Angular Material Tabs</h2>
+
+<mat-tab-group>
+  <mat-tab label="Home">
+    <p>Welcome to the Home Page!</p>
+  </mat-tab>
+  <mat-tab label="Profile">
+    <p>This is the Profile Page.</p>
+  </mat-tab>
+  <mat-tab label="Settings">
+    <p>Manage your settings here.</p>
+  </mat-tab>
+</mat-tab-group>
+
+🟢 Result: A basic tab group with three tabs – Home, Profile, and Settings.
+
+✅ 3. Dynamic Tabs Example
+
+Let's add tabs dynamically based on an array.
+
+📌 app.component.ts
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+})
+export class AppComponent {
+  tabs = [
+    { label: 'Home', content: 'Welcome to Home Page!' },
+    { label: 'Profile', content: 'View your Profile here.' },
+    { label: 'Settings', content: 'Update your Settings here.' },
+  ];
+
+  addTab() {
+    this.tabs.push({ label: `Tab ${this.tabs.length + 1}`, content: 'New Tab Content' });
+  }
+
+  removeTab(index: number) {
+    this.tabs.splice(index, 1);
+  }
+}
+📌 app.component.html
+
+<h2>Dynamic Tabs Example</h2>
+
+<button mat-raised-button color="primary" (click)="addTab()">Add Tab</button>
+
+<mat-tab-group>
+  <mat-tab *ngFor="let tab of tabs; let i = index" [label]="tab.label">
+    <p>{{ tab.content }}</p>
+    <button mat-button color="warn" (click)="removeTab(i)">Remove Tab</button>
+  </mat-tab>
+</mat-tab-group>
+
+🟢 Result:
+
+Dynamically add and remove tabs.
+
+Each tab is generated based on the tabs array.
+
+✅ 4. Customizing Tab Appearance
+
+📌 app.component.css
+
+.custom-tab .mat-tab-label {
+  color: #1976d2; /* Custom color for tab label */
+  font-weight: bold;
+}
+
+.custom-tab .mat-tab-label-active {
+  color: #d32f2f; /* Active tab label color */
+}
+📌 app.component.html
+
+<h2>Customized Tabs Example</h2>
+
+<mat-tab-group class="custom-tab">
+  <mat-tab label="Custom Tab 1">
+    <p>Custom Styled Tab 1 Content</p>
+  </mat-tab>
+  <mat-tab label="Custom Tab 2">
+    <p>Custom Styled Tab 2 Content</p>
+  </mat-tab>
+</mat-tab-group>
+
+🟢 Result: Custom tab colors for both active and inactive states.
+
+✅ 5. Lazy Loading Tab Content
+
+Load content only when the tab is active using the mat-tab's *ngIf.
+
+📌 app.component.html
+
+<h2>Lazy Loading Tabs Example</h2>
+
+<mat-tab-group>
+  <mat-tab label="Eager Tab">
+    <p>This content is loaded eagerly!</p>
+  </mat-tab>
+
+  <mat-tab label="Lazy Tab">
+    <ng-template matTabContent>
+      <p>This content is lazy-loaded!</p>
+    </ng-template>
+  </mat-tab>
+</mat-tab-group>
+
+🟢 Result:
+
+The second tab’s content is lazy-loaded only when it is activated.
+
+✅ 6. Tab Navigation with Angular Router
+
+📌 Step 1: Add Routes in app-routing.module.ts
+
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { HomeComponent } from './home.component';
+import { ProfileComponent } from './profile.component';
+
+const routes: Routes = [
+  { path: 'home', component: HomeComponent },
+  { path: 'profile', component: ProfileComponent },
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule],
+})
+export class AppRoutingModule {}
+
+📌 Step 2: Use routerLink in Tabs
+
+<h2>Router Tabs Example</h2>
+
+<mat-tab-group>
+  <mat-tab label="Home">
+    <a mat-button routerLink="/home">Go to Home</a>
+  </mat-tab>
+  <mat-tab label="Profile">
+    <a mat-button routerLink="/profile">Go to Profile</a>
+  </mat-tab>
+</mat-tab-group>
+
+<router-outlet></router-outlet>
+
+🟢 Result:
+
+Navigation across pages via Angular Router within tabs.
+
+✅ 7. Advanced Tab Features
+
+Disabled Tabs:
+
+<mat-tab label="Disabled Tab" disabled>
+  <p>This tab is disabled!</p>
+</mat-tab>
+Swipe Navigation (for mobile):
+
+<mat-tab-group [disableRipple]="true">
+  <mat-tab label="No Ripple Effect">
+    <p>Ripple Effect is disabled.</p>
+  </mat-tab>
+</mat-tab-group>
+
+✅ 8. Summary
+
+You learned how to:
+
+✅ Create Basic and Dynamic Angular Material Tabs.
+
+✅ Customize the appearance of tabs.
+
+✅ Use Lazy Loading to optimize performance.
+
+✅ Integrate Router Navigation with tabs.
+
+✅ Implement Advanced Features like disabling and ripple effects.
+
+
+Cards :
+
+Angular Material provides a flexible and responsive <mat-card> component that is used to display information in a clean, organized, and user-friendly way. It allows you to include content such as text, images, actions, and buttons.
+
+📌 Step 1: Set Up Angular Material in Your Angular Project
+Ensure you have Angular Material installed in your Angular project.
+
+Install Angular Material:
+
+ng add @angular/material
+
+Import MatCardModule in your app.module.ts:
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatCardModule } from '@angular/material/card';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule, BrowserAnimationsModule, MatCardModule],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+
+📌 Step 2: Basic Angular Material Card
+
+app.component.html
+
+<mat-card>
+  <mat-card-title>Basic Card</mat-card-title>
+  <mat-card-content>
+    This is a simple Angular Material card.
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-button>Action 1</button>
+    <button mat-button>Action 2</button>
+  </mat-card-actions>
+</mat-card>
+✅ Output: A simple card with a title, content, and action buttons.
+
+📌 Step 3: Card with Image
+app.component.html
+
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Card with Image</mat-card-title>
+    <mat-card-subtitle>Subtitle here</mat-card-subtitle>
+  </mat-card-header>
+
+  <img mat-card-image src="https://picsum.photos/300/200" alt="Random Image">
+
+  <mat-card-content>
+    This card has an image and additional information.
+  </mat-card-content>
+
+  <mat-card-actions>
+    <button mat-raised-button color="primary">View</button>
+    <button mat-button color="accent">Share</button>
+  </mat-card-actions>
+</mat-card>
+✅ Features:
+✔ Header (with title and subtitle)
+✔ Image
+✔ Actions (with buttons)
+
+📌 Step 4: Card with Avatar (Profile Card)
+
+app.component.html
+
+<mat-card>
+  <mat-card-header>
+    <div mat-card-avatar class="profile-avatar"></div>
+    <mat-card-title>John Doe</mat-card-title>
+    <mat-card-subtitle>Software Engineer</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    John is an Angular developer with 5+ years of experience.
+  </mat-card-content>
+
+  <mat-card-actions>
+    <button mat-button color="primary">Connect</button>
+  </mat-card-actions>
+</mat-card>
+
+app.component.css
+
+.profile-avatar {
+  background-image: url('https://randomuser.me/api/portraits/men/32.jpg');
+  background-size: cover;
+}
+✅ Features:
+✔ Avatar (Profile Image)
+✔ Content with Description
+✔ Action Button
+
+📌 Step 5: Card with Footer
+app.component.html
+
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Article Title</mat-card-title>
+    <mat-card-subtitle>By Jane Doe</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    This is a brief summary of the article. Click below to read more.
+  </mat-card-content>
+
+  <mat-card-actions>
+    <button mat-stroked-button color="accent">Read More</button>
+  </mat-card-actions>
+
+  <mat-card-footer>
+    <small>Published: August 2023</small>
+  </mat-card-footer>
+</mat-card>
+✅ Features:
+✔ Card Footer
+✔ Custom Actions
+
+📌 Step 6: Horizontal (Row) Card
+
+app.component.html
+
+<mat-card class="horizontal-card">
+  <img mat-card-image src="https://picsum.photos/150/150" alt="Thumbnail">
+  <mat-card-content>
+    <h3>Horizontal Card</h3>
+    <p>This card arranges content in a horizontal layout.</p>
+    <button mat-button>Learn More</button>
+  </mat-card-content>
+</mat-card>
+
+app.component.css
+
+.horizontal-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+✅ Feature: Horizontal layout with image and content side by side.
+
+📌 Step 7: Card with Dynamic Content
+
+app.component.ts
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+})
+export class AppComponent {
+  products = [
+    { title: 'Laptop', description: 'High-end gaming laptop', price: '$1200' },
+    { title: 'Smartphone', description: 'Flagship phone', price: '$800' },
+    { title: 'Smartwatch', description: 'Fitness tracker', price: '$300' },
+  ];
+}
+
+app.component.html
+
+<div *ngFor="let product of products">
+  <mat-card>
+    <mat-card-title>{{ product.title }}</mat-card-title>
+    <mat-card-content>{{ product.description }}</mat-card-content>
+    <mat-card-footer>
+      <strong>{{ product.price }}</strong>
+    </mat-card-footer>
+  </mat-card>
+</div>
+
+✅ Features:
+✔ Dynamically generated cards
+✔ Reusable component structure
+
+📌 Step 8: Responsive Card Grid
+
+app.component.html
+
+<div class="card-container">
+  <mat-card *ngFor="let product of products">
+    <mat-card-title>{{ product.title }}</mat-card-title>
+    <mat-card-content>{{ product.description }}</mat-card-content>
+  </mat-card>
+</div>
+
+app.component.css
+
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+✅ Feature: Responsive card grid using CSS Grid.
+
+📌 Step 9: Elevated and Outlined Cards
+
+<mat-card class="elevated-card">Elevated Card</mat-card>
+<mat-card class="outlined-card">Outlined Card</mat-card>
+
+app.component.css
+
+.elevated-card {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.outlined-card {
+  border: 1px solid #ddd;
+}
+✅ Feature: Styled cards with custom elevation and outlines.
+
+📌 Summary
+✔ Basic Card: Simple content display
+✔ Image Card: Image with content
+✔ Profile Card: Avatar with user info
+✔ Footer Card: Footer for metadata
+✔ Horizontal Card: Side-by-side layout
+✔ Dynamic Card: Data-driven cards
+✔ Responsive Card Grid: Adaptable to different screens
+
+
+Stepper :
+
+Angular Material provides a Stepper component (mat-stepper), which allows users to navigate through different steps in a linear or non-linear process. It’s useful for multi-step forms, wizards, and processes that need to be broken down into stages.
+
+📌 Step 1: Set Up Your Angular Project
+
+Ensure you have an Angular project set up. If not, create one:
+
+ng new angular-material-stepper
+cd angular-material-stepper
+
+Install Angular Material
+
+ng add @angular/material
+
+Choose a theme, enable global typography, and browser animations when prompted.
+
+📌 Step 2: Import Angular Material Modules
+
+Add the necessary Angular Material modules to your app.module.ts:
+
+// src/app/app.module.ts
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    MatStepperModule,
+    MatButtonModule,
+    MatInputModule,
+    ReactiveFormsModule,
+    FormsModule,
+  ],
+  providers: [],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+
+📌 Step 3: Types of Angular Material Steppers
+
+Angular Material provides the following types of steppers:
+
+Linear Stepper (Enforces sequence)
+
+Non-Linear Stepper (Free navigation)
+
+Custom Step Control
+
+Vertical Stepper
+
+✅ Example 1: Linear Stepper
+
+The linear stepper enforces a specific order of steps.
+
+app.component.ts
+
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+})
+export class AppComponent {
+  isLinear = true;
+  personalForm: FormGroup;
+  addressForm: FormGroup;
+
+  constructor(private _formBuilder: FormBuilder) {
+    this.personalForm = this._formBuilder.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+    });
+
+    this.addressForm = this._formBuilder.group({
+      city: ['', Validators.required],
+      zip: ['', Validators.required],
+    });
+  }
+
+  onSubmit() {
+    console.log('Personal Info:', this.personalForm.value);
+    console.log('Address Info:', this.addressForm.value);
+  }
+}
+
+app.component.html
+
+<h2>Linear Stepper Example</h2>
+
+<mat-horizontal-stepper [linear]="isLinear" #stepper>
+  <!-- Step 1: Personal Information -->
+  <mat-step [stepControl]="personalForm">
+    <form [formGroup]="personalForm">
+      <h3>Step 1: Personal Info</h3>
+      <mat-form-field appearance="outline">
+        <mat-label>Name</mat-label>
+        <input matInput formControlName="name" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" required />
+      </mat-form-field>
+
+      <div>
+        <button mat-button matStepperNext [disabled]="personalForm.invalid">Next</button>
+      </div>
+    </form>
+  </mat-step>
+
+  <!-- Step 2: Address Information -->
+  <mat-step [stepControl]="addressForm">
+    <form [formGroup]="addressForm">
+      <h3>Step 2: Address Info</h3>
+      <mat-form-field appearance="outline">
+        <mat-label>City</mat-label>
+        <input matInput formControlName="city" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>ZIP Code</mat-label>
+        <input matInput formControlName="zip" required />
+      </mat-form-field>
+
+      <div>
+        <button mat-button matStepperPrevious>Back</button>
+        <button mat-button (click)="onSubmit()" [disabled]="addressForm.invalid">Submit</button>
+      </div>
+    </form>
+  </mat-step>
+</mat-horizontal-stepper>
+
+✅ Example 2: Non-Linear Stepper
+
+Allows free navigation between steps.
+
+Update app.component.ts
+
+isLinear = false;
+
+Update app.component.html
+
+<h2>Non-Linear Stepper Example</h2>
+
+<mat-horizontal-stepper [linear]="isLinear" #stepper>
+  <mat-step label="Step 1: Info">
+    <p>Fill in any information and navigate freely.</p>
+    <button mat-button matStepperNext>Next</button>
+  </mat-step>
+
+  <mat-step label="Step 2: Confirmation">
+    <p>You can go back anytime.</p>
+    <button mat-button matStepperPrevious>Back</button>
+    <button mat-button (click)="onSubmit()">Submit</button>
+  </mat-step>
+</mat-horizontal-stepper>
+
+✅ Example 3: Vertical Stepper
+
+You can easily switch from horizontal to vertical.
+
+Update app.component.html
+
+<h2>Vertical Stepper Example</h2>
+
+<mat-vertical-stepper [linear]="isLinear" #stepper>
+  <mat-step label="Step 1: Info">
+    <p>First step of the vertical stepper.</p>
+    <button mat-button matStepperNext>Next</button>
+  </mat-step>
+
+  <mat-step label="Step 2: Confirmation">
+    <p>Second step, click to submit.</p>
+    <button mat-button matStepperPrevious>Back</button>
+    <button mat-button (click)="onSubmit()">Submit</button>
+  </mat-step>
+</mat-vertical-stepper>
+
+✅ Example 4: Custom Step Control
+
+You can manually move between steps using the stepper object.
+
+Update app.component.html
+
+<h2>Custom Step Control Example</h2>
+
+<mat-horizontal-stepper #stepper>
+  <mat-step label="Step 1">
+    <p>First step content.</p>
+    <button mat-button (click)="stepper.next()">Next</button>
+  </mat-step>
+
+  <mat-step label="Step 2">
+    <p>Second step content.</p>
+    <button mat-button (click)="stepper.previous()">Back</button>
+    <button mat-button (click)="onSubmit()">Submit</button>
+  </mat-step>
+</mat-horizontal-stepper>
+
+✅ Example 5: Conditional Step Validation
+
+You can enable or disable a step dynamically.
+
+Example: Skip validation under a condition:
+
+canSkip = true;
+
+<mat-step [optional]="canSkip">...</mat-step>
+
+📌 Step 4: Run the Application
+
+Ensure your Angular app is up and running:
+
+ng serve --open
+🎯 Summary
+
+You learned how to:
+
+Set up Angular Material and import the required modules.
+
+Create Linear, Non-Linear, Vertical, and Custom steppers.
+
+Implement Form Validation with Reactive Forms.
+
+Dynamically control steps and their behavior.
+
+
+Data Table :
+
+Angular Material provides a powerful and flexible mat-table component that helps display tabular data efficiently. It supports features like sorting, pagination, filtering, and custom templates. Let’s dive into a step-by-step guide on implementing Angular Material Data Table with various examples.
+
+✅ Step 1: Set Up Your Angular Project
+
+If you don’t have an Angular project, create one:
+
+ng new material-datatable-demo
+
+cd material-datatable-demo
+
+Install Angular Material:
+
+ng add @angular/material
+
+Choose the following options:
+
+✅ Theme (e.g., Indigo/Pink)
+
+✅ Global typography styles
+
+✅ Angular Material icons
+
+✅ Step 2: Import Required Angular Material Modules
+
+Open app.module.ts and import the required modules:
+
+📌 app.module.ts
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
+// Angular Material Modules
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatInputModule,
+    MatButtonModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+✅ Step 3: Basic Angular Material Data Table
+
+Let’s build a simple Material Data Table.
+
+📌 app.component.ts
+
+import { Component } from '@angular/core';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+})
+export class AppComponent {
+  displayedColumns: string[] = ['id', 'name', 'email', 'role'];
+  users: User[] = [
+    { id: 1, name: 'Alice', email: 'alice@example.com', role: 'Admin' },
+    { id: 2, name: 'Bob', email: 'bob@example.com', role: 'User' },
+    { id: 3, name: 'Charlie', email: 'charlie@example.com', role: 'Manager' },
+  ];
+}
+📌 app.component.html
+
+<h2>Basic Angular Material Data Table</h2>
+
+<table mat-table [dataSource]="users" class="mat-elevation-z8">
+
+  <!-- ID Column -->
+  <ng-container matColumnDef="id">
+    <th mat-header-cell *matHeaderCellDef> ID </th>
+    <td mat-cell *matCellDef="let user"> {{ user.id }} </td>
+  </ng-container>
+
+  <!-- Name Column -->
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef> Name </th>
+    <td mat-cell *matCellDef="let user"> {{ user.name }} </td>
+  </ng-container>
+
+  <!-- Email Column -->
+  <ng-container matColumnDef="email">
+    <th mat-header-cell *matHeaderCellDef> Email </th>
+    <td mat-cell *matCellDef="let user"> {{ user.email }} </td>
+  </ng-container>
+
+  <!-- Role Column -->
+  <ng-container matColumnDef="role">
+    <th mat-header-cell *matHeaderCellDef> Role </th>
+    <td mat-cell *matCellDef="let user"> {{ user.role }} </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+</table>
+
+✅ Step 4: Add Pagination and Sorting
+
+Now, let’s add pagination and sorting to our table.
+
+📌 app.component.ts
+
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+})
+export class AppComponent implements AfterViewInit {
+  displayedColumns: string[] = ['id', 'name', 'email', 'role'];
+  users: User[] = [
+    { id: 1, name: 'Alice', email: 'alice@example.com', role: 'Admin' },
+    { id: 2, name: 'Bob', email: 'bob@example.com', role: 'User' },
+    { id: 3, name: 'Charlie', email: 'charlie@example.com', role: 'Manager' },
+    { id: 4, name: 'Dave', email: 'dave@example.com', role: 'User' },
+    { id: 5, name: 'Eve', email: 'eve@example.com', role: 'Admin' },
+  ];
+  dataSource = new MatTableDataSource(this.users);
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
+
+  ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+  }
+}
+📌 app.component.html
+
+<h2>Material Table with Pagination & Sorting</h2>
+
+<table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+  <ng-container matColumnDef="id">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header> ID </th>
+    <td mat-cell *matCellDef="let user"> {{ user.id }} </td>
+  </ng-container>
+
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
+    <td mat-cell *matCellDef="let user"> {{ user.name }} </td>
+  </ng-container>
+
+  <ng-container matColumnDef="email">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header> Email </th>
+    <td mat-cell *matCellDef="let user"> {{ user.email }} </td>
+  </ng-container>
+
+  <ng-container matColumnDef="role">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header> Role </th>
+    <td mat-cell *matCellDef="let user"> {{ user.role }} </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>
+
+<mat-paginator [pageSize]="2" [pageSizeOptions]="[2, 4, 6]"></mat-paginator>
+
+✅ Step 5: Filter Data in Angular Material Table
+
+Add a search box to filter the table.
+
+📌 Add this in app.component.ts:
+
+applyFilter(event: Event) {
+  const filterValue = (event.target as HTMLInputElement).value;
+  this.dataSource.filter = filterValue.trim().toLowerCase();
+}
+📌 Update app.component.html:
+
+<input matInput placeholder="Filter Users" (keyup)="applyFilter($event)">
+
+<!-- Table and paginator here -->
+✅ 🎯 Final Output
+
+Basic Table
+
+Table with Pagination & Sorting
+
+Searchable Table
+
+🚀 Run the Application:
+
+ng serve --open
+
+
+Dialogs :
+
+
+Angular Material provides a powerful MatDialog service to display dialogs (modals) for user interactions, alerts, and form inputs.
+
+📌 Step 1: Set Up Angular Material
+If you haven’t installed Angular Material in your project, follow these steps:
+
+Install Angular Material:
+
+ng add @angular/material
+Choose Theme: Select a theme when prompted (e.g., indigo-pink).
+
+Import MatDialogModule in app.module.ts:
+
+// src/app/app.module.ts
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { AppComponent } from './app.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule, BrowserAnimationsModule, MatDialogModule, MatButtonModule],
+  providers: [],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+
+🟢 Example 1: Basic Dialog
+📌 Step 1: Create a Dialog Component
+
+ng generate component components/basic-dialog
+📂 Project Structure:
+
+src/
+├── app/
+│   ├── app.component.ts
+│   └── components/
+│       └── basic-dialog/
+│           ├── basic-dialog.component.ts
+│           ├── basic-dialog.component.html
+│           └── basic-dialog.component.css
+📌 Step 2: Set Up the Basic Dialog Component
+✅ basic-dialog.component.ts
+
+// src/app/components/basic-dialog/basic-dialog.component.ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-basic-dialog',
+  templateUrl: './basic-dialog.component.html',
+  styleUrls: ['./basic-dialog.component.css'],
+})
+export class BasicDialogComponent {}
+
+✅ basic-dialog.component.html
+
+<h2 mat-dialog-title>Welcome!</h2>
+<mat-dialog-content>This is a basic Angular Material dialog.</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>
+📌 Step 3: Open Dialog from Main Component
+✅ app.component.ts
+
+// src/app/app.component.ts
+import { Component } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { BasicDialogComponent } from './components/basic-dialog/basic-dialog.component';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+})
+export class AppComponent {
+  constructor(private dialog: MatDialog) {}
+
+  openDialog() {
+    this.dialog.open(BasicDialogComponent);
+  }
+}
+✅ app.component.html
+
+<button mat-raised-button color="primary" (click)="openDialog()">Open Dialog</button>
+
+🟡 Output:
+
+A basic dialog with a title, content, and a close button.
+
+🟢 Example 2: Passing Data to Dialog
+
+📌 Step 1: Modify the Dialog to Accept Data
+
+✅ basic-dialog.component.ts
+
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+
+@Component({
+  selector: 'app-basic-dialog',
+  templateUrl: './basic-dialog.component.html',
+})
+export class BasicDialogComponent {
+  constructor(@Inject(MAT_DIALOG_DATA) public data: any) {}
+}
+✅ basic-dialog.component.html
+
+<h2 mat-dialog-title>Hello, {{ data.name }}!</h2>
+<mat-dialog-content>Message: {{ data.message }}</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>
+
+📌 Step 2: Pass Data When Opening the Dialog
+
+✅ app.component.ts
+
+openDialog() {
+  this.dialog.open(BasicDialogComponent, {
+    data: {
+      name: 'John Doe',
+      message: 'Welcome to Angular Material Dialogs!',
+    },
+  });
+}
+
+🟢 Example 3: Return Data from Dialog
+
+📌 Step 1: Modify the Dialog to Return Data
+
+✅ basic-dialog.component.ts
+
+import { Component } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
+
+@Component({
+  selector: 'app-basic-dialog',
+  templateUrl: './basic-dialog.component.html',
+})
+export class BasicDialogComponent {
+  constructor(private dialogRef: MatDialogRef<BasicDialogComponent>) {}
+
+  closeDialog() {
+    this.dialogRef.close('Data from Dialog');
+  }
+}
+✅ basic-dialog.component.html
+
+<h2 mat-dialog-title>Send Data Back</h2>
+<mat-dialog-actions>
+  <button mat-button (click)="closeDialog()">Send & Close</button>
+</mat-dialog-actions>
+📌 Step 2: Receive Data in the Main Component
+
+✅ app.component.ts
+
+openDialog() {
+  const dialogRef = this.dialog.open(BasicDialogComponent);
+
+  dialogRef.afterClosed().subscribe((result) => {
+    console.log('Dialog closed with data:', result);
+  });
+}
+🟢 Example 4: Confirmation Dialog
+
+✅ confirmation-dialog.component.ts
+
+import { Component } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
+
+@Component({
+  selector: 'app-confirmation-dialog',
+  template: `
+    <h2 mat-dialog-title>Confirm Action</h2>
+    <mat-dialog-content>Are you sure you want to proceed?</mat-dialog-content>
+    <mat-dialog-actions>
+      <button mat-button (click)="confirm()">Yes</button>
+      <button mat-button mat-dialog-close>No</button>
+    </mat-dialog-actions>
+  `,
+})
+export class ConfirmationDialogComponent {
+  constructor(private dialogRef: MatDialogRef<ConfirmationDialogComponent>) {}
+
+  confirm() {
+    this.dialogRef.close(true);
+  }
+}
+✅ app.component.ts
+
+import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
+
+openConfirmationDialog() {
+  const dialogRef = this.dialog.open(ConfirmationDialogComponent);
+
+  dialogRef.afterClosed().subscribe((result) => {
+    if (result) {
+      console.log('User confirmed the action.');
+    } else {
+      console.log('User canceled the action.');
+    }
+  });
+}
+✅ app.component.html
+
+<button mat-raised-button color="warn" (click)="openConfirmationDialog()">Confirm Action</button>
+
+🟢 Example 5: Full-Screen Dialog
+
+✅ Open Dialog in Fullscreen Mode
+
+openFullScreenDialog() {
+  this.dialog.open(BasicDialogComponent, {
+    width: '100vw',
+    height: '100vh',
+    panelClass: 'full-screen-dialog',
+  });
+}
+✅ Add Styles
+
+/* styles.css */
+.full-screen-dialog .mat-dialog-container {
+  padding: 0;
+}
+
+🟢 Example 6: Custom Animations and Configurations
+
+✅ Custom Configuration Example
+
+openCustomDialog() {
+  this.dialog.open(BasicDialogComponent, {
+    disableClose: true, // Prevent closing on backdrop click
+    hasBackdrop: true,
+    backdropClass: 'custom-backdrop',
+  });
+}
+✅ Custom Backdrop CSS
+
+.custom-backdrop {
+  background: rgba(0, 0, 0, 0.8);
+}
+🎯 Summary
+You’ve learned:
+
+Basic Dialog
+
+Passing Data to Dialog
+
+Returning Data from Dialog
+
+Confirmation Dialog
+
+Full-Screen Dialog
+
+Custom Configuration
+
+
+

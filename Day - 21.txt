@@ -1,0 +1,1544 @@
+<div class="container">
+  <h2>Custom Validator Example</h2>
+
+  <form [formGroup]="userForm">
+    <!-- Username Field -->
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input id="username" type="text" class="form-control" formControlName="username">
+      
+      <!-- Validation Message -->
+      <div *ngIf="usernameControl?.errors?.['noSpaces'] && usernameControl?.touched">
+        <small class="text-danger">Username should not contain spaces.</small>
+      </div>
+      <div *ngIf="usernameControl?.errors?.['required'] && usernameControl?.touched">
+        <small class="text-danger">Username is required.</small>
+      </div>
+    </div>
+
+    <button class="btn btn-primary mt-3" [disabled]="userForm.invalid">
+      Submit
+    </button>
+  </form>
+</div>
+
+
+import { AbstractControl, ValidationErrors } from '@angular/forms';
+
+export function noSpacesValidator(control: AbstractControl): ValidationErrors | null {
+  if (control.value && control.value.includes(' ')) {
+    return { noSpaces: true }; // Return error object if space is found
+  }
+  return null; // Return null if valid (no error)
+}
+
+
+userForm = new FormGroup({
+    username: new FormControl('', [Validators.required, noSpacesValidator]),
+  });
+
+  get usernameControl() {
+    return this.userForm.get('username');
+  }
+
+
+
+.container {
+  max-width: 400px;
+  margin: auto;
+  padding: 20px;
+}
+.text-danger {
+  color: red;
+}
+
+
+
+import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { Observable, of } from 'rxjs';
+import { delay, map } from 'rxjs/operators';
+
+// Mock database of existing emails
+const existingEmails = ['test@example.com', 'admin@example.com'];
+
+export function emailExistsValidator(control: AbstractControl): Observable<ValidationErrors | null> {
+  return of(existingEmails.includes(control.value)).pipe(
+    delay(1000), // Simulate network delay
+    map(exists => (exists ? { emailExists: true } : null))
+  );
+}
+
+
+
+<div class="container">
+  <h2>Async Email Validation</h2>
+
+  <form [formGroup]="userForm">
+    <!-- Email Field -->
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input id="email" type="email" class="form-control" formControlName="email">
+      
+      <!-- Validation Messages -->
+      <div *ngIf="emailControl?.errors?.['required'] && emailControl?.touched">
+        <small class="text-danger">Email is required.</small>
+      </div>
+      <div *ngIf="emailControl?.errors?.['email'] && emailControl?.touched">
+        <small class="text-danger">Invalid email format.</small>
+      </div>
+      <div *ngIf="emailControl?.errors?.['emailExists'] && emailControl?.touched">
+        <small class="text-danger">Email already exists.</small>
+      </div>
+    </div>
+
+    <button class="btn btn-primary mt-3" [disabled]="userForm.invalid">
+      Submit
+    </button>
+  </form>
+</div>
+
+
+
+userForm = new FormGroup({
+    email: new FormControl(
+      '', 
+      [Validators.required, Validators.email], // Synchronous validators
+      emailExistsValidator // Asynchronous validator
+    ),
+  });
+
+  get emailControl() {
+    return this.userForm.get('email');
+  }
+
+
+
+.container {
+  max-width: 400px;
+  margin: auto;
+  padding: 20px;
+}
+.text-danger {
+  color: red;
+}
+
+
+
+RXJS Introduction :
+
+🔹 What is RxJS?
+RxJS (Reactive Extensions for JavaScript) is a library for reactive programming using Observables, making it easier to handle asynchronous operations like HTTP requests, user inputs, and event handling efficiently in Angular.
+
+🔹 Step 1: Install RxJS (if not included)
+RxJS is pre-installed with Angular, but if needed, install it manually:
+
+sh
+Copy
+Edit
+npm install rxjs
+🔹 Step 2: Understanding RxJS Core Concepts
+✔️ Observables
+Observables emit data over time, and subscribers receive these values.
+
+📌 Example of an Observable
+
+import { Observable } from 'rxjs';
+
+const myObservable = new Observable(observer => {
+  observer.next('Hello');  // Emit value
+  observer.next('RxJS');
+  observer.complete();      // Signal completion
+});
+
+myObservable.subscribe(value => console.log(value)); 
+// Output: "Hello", "RxJS"
+
+✔️ Operators
+
+RxJS operators help transform, filter, or modify observable data.
+
+map() - Modify values
+filter() - Filter values
+debounceTime() - Delay emissions to avoid frequent API calls
+switchMap() - Cancel previous requests and switch to new ones
+
+📌 Example using map()
+
+import { of } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+of(2, 4, 6)
+  .pipe(map(x => x * 2))
+  .subscribe(console.log); 
+// Output: 4, 8, 12
+
+🔹 Step 3: Using RxJS in an Angular Component
+
+Example: Handling User Input with RxJS
+
+📌 app.component.ts
+
+import { Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { debounceTime } from 'rxjs/operators';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+})
+export class AppComponent {
+  searchControl = new FormControl('');
+
+  constructor() {
+    this.searchControl.valueChanges
+      .pipe(debounceTime(500)) // Wait 500ms after user stops typing
+      .subscribe(value => console.log('User input:', value));
+  }
+}
+📌 app.component.html
+
+<input type="text" [formControl]="searchControl" placeholder="Search...">
+✅ This prevents unnecessary API calls by waiting 500ms after the last keystroke.
+
+
+🔹 Step 4: Using RxJS with HTTP Requests
+
+Example: Fetch API Data with HttpClient and RxJS
+
+📌 app.component.ts
+
+import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+})
+export class AppComponent {
+  data$: Observable<any>;
+
+  constructor(private http: HttpClient) {
+    this.data$ = this.http.get('https://jsonplaceholder.typicode.com/posts')
+      .pipe(map(data => data)); // Transform data if needed
+  }
+}
+📌 app.component.html
+
+<ul>
+  <li *ngFor="let item of data$ | async">{{ item.title }}</li>
+</ul>
+✅ The | async pipe automatically subscribes to the observable.
+
+🔹 Step 5: Creating Custom RxJS Operators
+
+You can create custom RxJS operators for reusable logic.
+
+📌 Example: Custom Operator to Filter Even Numbers
+
+import { Observable } from 'rxjs';
+
+function filterEvenNumbers() {
+  return (source: Observable<number>) =>
+    new Observable<number>(observer => {
+      return source.subscribe({
+        next(value) {
+          if (value % 2 === 0) observer.next(value);
+        },
+        error(err) { observer.error(err); },
+        complete() { observer.complete(); }
+      });
+    });
+}
+📌 Use in Component
+
+import { of } from 'rxjs';
+
+of(1, 2, 3, 4, 5)
+  .pipe(filterEvenNumbers())
+  .subscribe(console.log);
+// Output: 2, 4
+
+✅ This custom operator filters even numbers from an observable stream.
+
+🔹 Step 6: Handling Errors with RxJS
+
+Example: Using catchError() in HTTP Requests
+
+📌 app.component.ts
+
+import { HttpClient } from '@angular/common/http';
+import { Component } from '@angular/core';
+import { catchError, throwError } from 'rxjs';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+})
+export class AppComponent {
+  constructor(private http: HttpClient) {
+    this.http.get('https://jsonplaceholder.typicode.com/posts_invalid')
+      .pipe(
+        catchError(error => {
+          console.error('Error:', error);
+          return throwError(() => new Error('Something went wrong!'));
+        })
+      )
+      .subscribe(
+        data => console.log('Data:', data),
+        error => console.log('Error occurred:', error.message)
+      );
+  }
+}
+✅ If the API request fails, catchError() handles the error gracefully.
+
+🔹 Step 7: Unsubscribing from Observables
+
+To prevent memory leaks, always unsubscribe from observables.
+
+📌 Using ngOnDestroy()
+
+import { Component, OnDestroy } from '@angular/core';
+import { Subscription, interval } from 'rxjs';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+})
+export class AppComponent implements OnDestroy {
+  private subscription: Subscription;
+
+  constructor() {
+    this.subscription = interval(1000).subscribe(value => console.log(value));
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe(); // Prevents memory leak
+  }
+}
+
+✅ This cleans up the observable when the component is destroyed.
+
+🔥 Summary of What We Learned
+
+✔ RxJS Observables & Operators (map, filter, debounceTime, switchMap)
+✔ Using RxJS in Angular Forms (Handling user input)
+✔ RxJS with HTTP Requests (HttpClient)
+✔ Creating Custom RxJS Operators
+✔ Handling Errors with catchError()
+✔ Unsubscribing from Observables to Prevent Memory Leaks
+
+
+Observables, Observers and Subjects :
+
+Angular heavily relies on RxJS (Reactive Extensions for JavaScript) for handling asynchronous operations. Observables, Observers, and Subjects are key components of RxJS.
+
+🔹 1. Observables in Angular
+An Observable is a stream of data that emits values over time. It can emit multiple values (unlike Promises, which emit only one value).
+
+📌 Example 1: Creating a Simple Observable
+Let's create an Observable that emits a series of numbers.
+
+import { Observable } from 'rxjs';
+
+const numberObservable = new Observable<number>((observer) => {
+  observer.next(1);  // Emit value 1
+  observer.next(2);  // Emit value 2
+  observer.next(3);  // Emit value 3
+  observer.complete();  // End of stream
+});
+
+// Subscribe to the observable
+
+numberObservable.subscribe({
+  next: (value) => console.log('Received:', value),
+  complete: () => console.log('Observable completed'),
+});
+
+🔹 Explanation
+next(value): Emits data to the subscriber.
+complete(): Indicates that no more data will be emitted.
+Output:
+
+Received: 1
+Received: 2
+Received: 3
+Observable completed
+
+🔹 2. Observers in Angular
+
+An Observer is simply an object that listens (subscribes) to an Observable and reacts to its emitted values.
+
+📌 Example 2: Observer with error Handling
+
+import { Observable } from 'rxjs';
+
+const observableWithError = new Observable((observer) => {
+  observer.next('Hello');
+  observer.next('World');
+  observer.error('Something went wrong!'); // Emit an error
+});
+
+const observer = {
+  next: (value: any) => console.log('Value:', value),
+  error: (err: any) => console.log('Error:', err),
+  complete: () => console.log('Done'),
+};
+
+// Subscribe using observer
+observableWithError.subscribe(observer);
+
+🔹 Explanation
+The observer handles next(), error(), and complete().
+Output:
+
+Value: Hello
+Value: World
+Error: Something went wrong!
+
+🔹 3. Subjects in Angular
+
+A Subject is a special type of Observable that acts as both an Observable and an Observer:
+
+Observable: It emits data to subscribers.
+Observer: It allows pushing new values dynamically.
+
+📌 Example 3: Using a Simple Subject
+
+import { Subject } from 'rxjs';
+
+const subject = new Subject<number>();
+
+// Subscribers
+subject.subscribe((value) => console.log('Subscriber 1:', value));
+subject.subscribe((value) => console.log('Subscriber 2:', value));
+
+subject.next(10); // Emits value 10 to both subscribers
+subject.next(20); // Emits value 20 to both subscribers
+
+🔹 Explanation
+
+A Subject allows multiple subscribers.
+When next(10) is called, both subscribers receive the value.
+Output:
+
+Subscriber 1: 10
+Subscriber 2: 10
+Subscriber 1: 20
+Subscriber 2: 20
+
+🔹 4. Types of Subjects
+
+1️⃣ BehaviorSubject (Stores the Last Value)
+
+Stores the last emitted value and emits it to new subscribers immediately.
+📌 Example 4: BehaviorSubject
+
+import { BehaviorSubject } from 'rxjs';
+
+const behaviorSubject = new BehaviorSubject<string>('Initial Value');
+
+behaviorSubject.subscribe((value) => console.log('Subscriber 1:', value));
+
+behaviorSubject.next('Hello'); // Emits 'Hello'
+behaviorSubject.next('World'); // Emits 'World'
+
+// New Subscriber will receive the latest emitted value ('World')
+behaviorSubject.subscribe((value) => console.log('Subscriber 2:', value));
+🔹 Output
+
+Subscriber 1: Initial Value
+Subscriber 1: Hello
+Subscriber 1: World
+Subscriber 2: World
+
+✔️ Use Case: Store user authentication state.
+
+2️⃣ ReplaySubject (Stores Multiple Previous Values)
+
+Stores a specified number of emitted values and replays them to new subscribers.
+📌 Example 5: ReplaySubject
+
+import { ReplaySubject } from 'rxjs';
+
+const replaySubject = new ReplaySubject<number>(2); // Stores last 2 values
+
+replaySubject.next(1);
+replaySubject.next(2);
+replaySubject.next(3);
+
+replaySubject.subscribe((value) => console.log('Subscriber 1:', value));
+🔹 Output
+
+Subscriber 1: 2
+Subscriber 1: 3
+
+✔️ Use Case: Chat application, stock price updates.
+
+3️⃣ AsyncSubject (Only Emits the Last Value on Completion)
+
+Emits only the last value when complete() is called.
+📌 Example 6: AsyncSubject
+
+import { AsyncSubject } from 'rxjs';
+
+const asyncSubject = new AsyncSubject<number>();
+
+asyncSubject.subscribe((value) => console.log('Subscriber:', value));
+
+asyncSubject.next(10);
+asyncSubject.next(20);
+asyncSubject.next(30);
+asyncSubject.complete(); // Emits the last value (30)
+
+🔹 Output
+
+Subscriber: 30
+✔️ Use Case: HTTP request caching.
+
+🔹 5. Real-World Example in Angular
+
+📌 Example 7: Using a Subject for Data Sharing
+
+A Subject is useful for communication between Angular components.
+
+✅ Step 1: Create a Service
+
+📌 data.service.ts
+
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class DataService {
+  private subject = new Subject<string>();
+
+  sendData(data: string) {
+    this.subject.next(data);
+  }
+
+  getData() {
+    return this.subject.asObservable();
+  }
+}
+✅ Step 2: Component 1 (Sender)
+📌 sender.component.ts
+
+import { Component } from '@angular/core';
+import { DataService } from '../data.service';
+
+@Component({
+  selector: 'app-sender',
+  template: `<button (click)="sendMessage()">Send Message</button>`,
+})
+export class SenderComponent {
+  constructor(private dataService: DataService) {}
+
+  sendMessage() {
+    this.dataService.sendData('Hello from Sender!');
+  }
+}
+
+✅ Step 3: Component 2 (Receiver)
+
+📌 receiver.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { DataService } from '../data.service';
+
+@Component({
+  selector: 'app-receiver',
+  template: `<p>{{ message }}</p>`,
+})
+export class ReceiverComponent implements OnInit {
+  message: string = '';
+
+  constructor(private dataService: DataService) {}
+
+  ngOnInit() {
+    this.dataService.getData().subscribe((data) => {
+      this.message = data;
+    });
+  }
+}
+✔️ Use Case: Cross-component communication using RxJS Subjects.
+
+🎯 Summary
+
+Feature	Observable	Subject	BehaviorSubject	ReplaySubject	AsyncSubject
+Multicasting	❌ No	✅ Yes	✅ Yes	✅ Yes	✅ Yes
+Stores Last Value	❌ No	❌ No	✅ Yes	✅ Yes (Multiple)	✅ Yes (Last only)
+Emits on Subscription	✅ Yes	✅ Yes	✅ Yes (Latest)	✅ Yes (Stored values)	✅ Only when complete()
+
+🚀 Key Takeaways
+
+Observables: Emit values over time, need subscribers.
+Observers: Listen for values emitted by Observables.
+Subjects: Act as both Observable and Observer.
+BehaviorSubject: Stores and emits the latest value.
+ReplaySubject: Stores multiple previous values.
+AsyncSubject: Emits only the last value on completion.
+
+
+BehavoirSubject :
+
+🔹 What is a BehaviorSubject?
+
+A BehaviorSubject is a special type of RxJS Subject that:
+
+Holds the latest value and emits it immediately to new subscribers.
+Requires an initial value when created.
+Allows multiple subscribers to listen to changes.
+Is useful for sharing state across components.
+
+🔹 Step 1: Installing RxJS (If Not Installed)
+
+Angular already comes with RxJS. If you need to install it separately:
+
+npm install rxjs
+
+🔹 Step 2: Basic Example of BehaviorSubject
+
+Let's create a simple BehaviorSubject that shares a user's status.
+
+📌 behavior-subject-example.ts
+
+import { BehaviorSubject } from 'rxjs';
+
+// Step 1: Create a BehaviorSubject with an initial value
+const userStatus = new BehaviorSubject<string>('Offline');
+
+// Step 2: Subscribe to it
+userStatus.subscribe(status => console.log(`Subscriber 1: ${status}`));
+
+// Step 3: Emit a new value
+userStatus.next('Online');
+
+// Step 4: New subscriber gets the latest emitted value immediately
+userStatus.subscribe(status => console.log(`Subscriber 2: ${status}`));
+
+// Step 5: Emit another value
+
+userStatus.next('Away');
+
+📌 Output:
+Subscriber 1: Offline
+Subscriber 1: Online
+Subscriber 2: Online  // New subscriber gets the latest value immediately
+Subscriber 1: Away
+Subscriber 2: Away
+
+🔹 Step 3: Use BehaviorSubject in an Angular Service
+
+✅ Why Use a BehaviorSubject in Angular?
+
+It allows components to share state without @Input and @Output.
+Components get real-time updates when the state changes.
+Useful for user authentication, dark mode toggle, and global settings.
+
+📌 Create a User Service (user.service.ts)
+
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class UserService {
+  // Step 1: Create BehaviorSubject with an initial value
+  private userStatus = new BehaviorSubject<string>('Offline');
+
+  // Step 2: Expose it as an Observable
+  userStatus$ = this.userStatus.asObservable();
+
+  // Step 3: Method to update the value
+  updateUserStatus(status: string) {
+    this.userStatus.next(status);
+  }
+}
+
+📌 Use the Service in AppComponent
+
+Modify app.component.ts to subscribe and update the BehaviorSubject.
+
+import { Component, OnInit } from '@angular/core';
+import { UserService } from './user.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+})
+export class AppComponent implements OnInit {
+  status: string = '';
+
+  constructor(private userService: UserService) {}
+
+  ngOnInit() {
+    // Step 4: Subscribe to the BehaviorSubject
+    this.userService.userStatus$.subscribe(status => {
+      this.status = status;
+    });
+  }
+
+  // Step 5: Call service method to update status
+  goOnline() {
+    this.userService.updateUserStatus('Online');
+  }
+
+  goOffline() {
+    this.userService.updateUserStatus('Offline');
+  }
+}
+
+📌 Modify app.component.html
+
+<h2>User Status: {{ status }}</h2>
+
+<button (click)="goOnline()">Go Online</button>
+<button (click)="goOffline()">Go Offline</button>
+
+🔹 Step 4: Advanced Example - Sharing Data Between Components
+
+Let's see how a BehaviorSubject syncs data between components.
+
+✅ Step 1: Create a Shared Data Service (shared.service.ts)
+
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class SharedService {
+  private messageSource = new BehaviorSubject<string>('Hello from Service');
+  currentMessage = this.messageSource.asObservable();
+
+  changeMessage(message: string) {
+    this.messageSource.next(message);
+  }
+}
+✅ Step 2: Create SenderComponent to Update Data
+
+📌 sender.component.ts
+
+import { Component } from '@angular/core';
+import { SharedService } from '../shared.service';
+
+@Component({
+  selector: 'app-sender',
+  templateUrl: './sender.component.html',
+})
+export class SenderComponent {
+  constructor(private sharedService: SharedService) {}
+
+  sendMessage() {
+    this.sharedService.changeMessage('Message from SenderComponent');
+  }
+}
+📌 sender.component.html
+
+<button (click)="sendMessage()">Send Message</button>
+
+✅ Step 3: Create ReceiverComponent to Receive Data
+
+📌 receiver.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { SharedService } from '../shared.service';
+
+@Component({
+  selector: 'app-receiver',
+  templateUrl: './receiver.component.html',
+})
+export class ReceiverComponent implements OnInit {
+  message: string = '';
+
+  constructor(private sharedService: SharedService) {}
+
+  ngOnInit() {
+    this.sharedService.currentMessage.subscribe(msg => {
+      this.message = msg;
+    });
+  }
+}
+
+📌 receiver.component.html
+
+<p>Received Message: {{ message }}</p>
+
+✅ Step 4: Use the Components in app.component.html
+
+<h2>BehaviorSubject - Component Communication</h2>
+<app-sender></app-sender>
+<app-receiver></app-receiver>
+
+🔹 Step 5: More Advanced Examples
+
+Example 1: Storing User Authentication State
+
+Use BehaviorSubject to store user authentication state.
+
+export class AuthService {
+  private isLoggedIn = new BehaviorSubject<boolean>(false);
+  isLoggedIn$ = this.isLoggedIn.asObservable();
+
+  login() {
+    this.isLoggedIn.next(true);
+  }
+
+  logout() {
+    this.isLoggedIn.next(false);
+  }
+}
+
+Example 2: Dark Mode Toggle with BehaviorSubject
+
+export class ThemeService {
+  private darkMode = new BehaviorSubject<boolean>(false);
+  darkMode$ = this.darkMode.asObservable();
+
+  toggleTheme() {
+    this.darkMode.next(!this.darkMode.value);
+  }
+}
+🔹 When to Use BehaviorSubject?
+
+✅ Best When:
+
+You need the latest value immediately upon subscription.
+You want to store and share state across multiple components.
+You need to provide default values.
+❌ Avoid When:
+
+You don't need to store the last emitted value.
+You don't need an initial value → Use Subject instead.
+
+
+AsyncSubject :
+
+🔹 What is AsyncSubject?
+
+AsyncSubject is a special type of Subject in RxJS that emits only the last value to subscribers when the subject completes.
+It does not emit values until it is completed.
+Once completed, only the last emitted value is sent to all subscribers (even those who subscribe later).
+
+1️⃣ Basic Example: AsyncSubject Basics
+
+🔹 This example shows how AsyncSubject only emits the last value when completed.
+
+📌 Example: Simple AsyncSubject in Angular
+
+import { AsyncSubject } from 'rxjs';
+
+// Create AsyncSubject
+const asyncSubject = new AsyncSubject<number>();
+
+// Subscribe before emitting values
+asyncSubject.subscribe(value => console.log('Subscriber 1:', value));
+
+asyncSubject.next(10);
+asyncSubject.next(20);
+asyncSubject.next(30); // Only this value will be emitted when completed
+
+// Subscribe after emitting values
+asyncSubject.subscribe(value => console.log('Subscriber 2:', value));
+
+// Complete the subject
+asyncSubject.complete();
+📌 Output:
+
+Subscriber 1: 30
+Subscriber 2: 30
+
+✅ Explanation:
+
+AsyncSubject only emits the last value (30) after calling .complete().
+Even though Subscriber 2 subscribes after some values were emitted, it still gets 30 since it subscribes before completion.
+
+2️⃣ Example: Using AsyncSubject in Angular Service
+
+🔹 Let's create a service to manage API calls where the last API result is shared with multiple components.
+
+Step 1: Create the Service
+📌 data.service.ts
+
+import { Injectable } from '@angular/core';
+import { AsyncSubject } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class DataService {
+  private dataSubject = new AsyncSubject<string>();
+
+  fetchData() {
+    setTimeout(() => {
+      this.dataSubject.next('Data Loaded from API');
+      this.dataSubject.complete(); // Notify subscribers with the last emitted value
+    }, 3000);
+  }
+
+  getData() {
+    return this.dataSubject.asObservable();
+  }
+}
+
+Step 2: Using the Service in a Component
+
+📌 app.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { DataService } from './data.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent implements OnInit {
+  message: string = 'Loading...';
+
+  constructor(private dataService: DataService) {}
+
+  ngOnInit() {
+    this.dataService.getData().subscribe(data => {
+      this.message = data;
+    });
+
+    // Call API after subscribing
+    this.dataService.fetchData();
+  }
+}
+
+Step 3: Display Data in UI
+📌 app.component.html
+
+<h1>{{ message }}</h1>
+
+✅ How It Works?
+
+The component subscribes to AsyncSubject before calling fetchData().
+The service fetches data and emits "Data Loaded from API" after 3 seconds.
+Once .complete() is called, the last value is sent to all subscribers.
+Any new subscriber will still receive "Data Loaded from API".
+
+3️⃣ Example: AsyncSubject with Multiple Components
+
+🔹 This example shows how multiple components can subscribe to the same AsyncSubject.
+
+Step 1: Modify the Service
+
+📌 data.service.ts
+
+import { Injectable } from '@angular/core';
+import { AsyncSubject } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class DataService {
+  private dataSubject = new AsyncSubject<string>();
+
+  fetchData() {
+    setTimeout(() => {
+      this.dataSubject.next('Shared Data Loaded');
+      this.dataSubject.complete();
+    }, 2000);
+  }
+
+  getData() {
+    return this.dataSubject.asObservable();
+  }
+}
+Step 2: Create Component A
+📌 component-a.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { DataService } from '../data.service';
+
+@Component({
+  selector: 'app-component-a',
+  template: `<p>Component A: {{ message }}</p>`,
+})
+export class ComponentA implements OnInit {
+  message = 'Waiting...';
+
+  constructor(private dataService: DataService) {}
+
+  ngOnInit() {
+    this.dataService.getData().subscribe(data => {
+      this.message = data;
+    });
+
+    this.dataService.fetchData();
+  }
+}
+Step 3: Create Component B
+📌 component-b.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { DataService } from '../data.service';
+
+@Component({
+  selector: 'app-component-b',
+  template: `<p>Component B: {{ message }}</p>`,
+})
+export class ComponentB implements OnInit {
+  message = 'Waiting...';
+
+  constructor(private dataService: DataService) {}
+
+  ngOnInit() {
+    this.dataService.getData().subscribe(data => {
+      this.message = data;
+    });
+  }
+}
+Step 4: Display Components in app.component.html
+
+<h1>AsyncSubject Example</h1>
+<app-component-a></app-component-a>
+<app-component-b></app-component-b>
+✅ How It Works?
+
+Component A fetches the data when initialized.
+Component B subscribes later, but still receives the last value after completion.
+📌 Expected Output:
+
+Component A: Shared Data Loaded
+Component B: Shared Data Loaded
+
+4️⃣ Example: AsyncSubject vs. BehaviorSubject vs. ReplaySubject
+
+Feature	AsyncSubject	BehaviorSubject	ReplaySubject
+Emits Values?	Only the last value on completion	The latest value + new emissions	Stores and replays all values
+Initial Value?	No	Yes (requires initial value)	No
+Late Subscribers?	Get the last value only if completed	Get the latest value instantly	Get all past values
+Use Case	API calls, One-time notifications	State management	Caching previous data
+📌 Example:
+
+import { AsyncSubject, BehaviorSubject, ReplaySubject } from 'rxjs';
+
+const asyncSub = new AsyncSubject<number>();
+const behaviorSub = new BehaviorSubject<number>(0);
+const replaySub = new ReplaySubject<number>();
+
+asyncSub.next(1);
+behaviorSub.next(1);
+replaySub.next(1);
+
+asyncSub.complete();
+
+asyncSub.subscribe(value => console.log('AsyncSubject:', value));
+behaviorSub.subscribe(value => console.log('BehaviorSubject:', value));
+replaySub.subscribe(value => console.log('ReplaySubject:', value));
+
+📌 Expected Output:
+
+AsyncSubject: 1
+BehaviorSubject: 1
+ReplaySubject: 1
+
+
+ReplaySubject :
+
+
+In RxJS, a ReplaySubject is a special type of Subject that re-emits previous values to new subscribers. It acts like a "cache" of values and allows late subscribers to receive past emitted values.
+
+🔹 Key Features of ReplaySubject
+Stores previous values and replays them to new subscribers.
+Can specify a buffer size, i.e., how many past values should be stored and replayed.
+Works like a multicasting Observable, sharing values among multiple subscribers.
+Useful in scenarios where subscribers join late but still need past values.
+🔹 Installation (If RxJS is not available)
+
+Angular comes with RxJS, but if needed:
+
+npm install rxjs
+
+🔹 Example 1: Basic ReplaySubject (Replaying All Values)
+Scenario: We emit some values, and a subscriber joins later. It should receive all past values.
+📌 Code:
+
+import { ReplaySubject } from 'rxjs';
+
+const subject = new ReplaySubject(); // No buffer size, stores all values
+
+subject.next('Angular');
+subject.next('RxJS');
+subject.next('ReplaySubject');
+
+console.log('Subscriber 1 Subscribes:');
+subject.subscribe(value => console.log(value)); // Gets all past values
+📌 Output:
+
+Subscriber 1 Subscribes:
+
+Angular
+RxJS
+ReplaySubject
+
+🔹 Explanation: The subscriber gets all previously emitted values because there is no buffer limit.
+
+🔹 Example 2: ReplaySubject with Buffer Size
+
+Scenario: We specify a buffer size of 2, so only the last 2 values will be replayed.
+
+📌 Code:
+
+import { ReplaySubject } from 'rxjs';
+
+const subject = new ReplaySubject(2); // Stores only the last 2 values
+
+subject.next('Angular');
+subject.next('RxJS');
+subject.next('ReplaySubject');
+
+console.log('Subscriber 1 Subscribes:');
+subject.subscribe(value => console.log(value)); // Gets last 2 values
+📌 Output:
+
+Subscriber 1 Subscribes:
+
+RxJS
+
+ReplaySubject
+🔹 Explanation: Only the last two values (RxJS and ReplaySubject) are replayed to the subscriber.
+
+🔹 Example 3: ReplaySubject with Time-based Buffer
+Scenario: Replay only values emitted in the last 3 seconds.
+📌 Code:
+
+import { ReplaySubject } from 'rxjs';
+
+const subject = new ReplaySubject(2, 3000); // Buffer: 2 values, Time: 3 sec
+
+subject.next('Angular');
+setTimeout(() => subject.next('RxJS'), 1000);
+setTimeout(() => subject.next('ReplaySubject'), 2000);
+setTimeout(() => {
+  console.log('Subscriber 1 Subscribes:');
+  subject.subscribe(value => console.log(value)); // Only recent values
+}, 4000);
+
+📌 Output (after 4 sec):
+
+Subscriber 1 Subscribes:
+
+ReplaySubject
+🔹 Explanation: Since Angular was emitted more than 3 seconds ago, it is not replayed.
+
+🔹 Example 4: Using ReplaySubject in Angular Service
+
+Scenario: A service manages user authentication status and replays it for new subscribers.
+📌 📂 auth.service.ts
+
+import { Injectable } from '@angular/core';
+import { ReplaySubject } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private userStatus = new ReplaySubject<string>(1); // Buffer size: 1 (latest status)
+
+  constructor() {
+    this.userStatus.next('Logged Out'); // Default status
+  }
+
+  login() {
+    this.userStatus.next('Logged In');
+  }
+
+  logout() {
+    this.userStatus.next('Logged Out');
+  }
+
+  getUserStatus() {
+    return this.userStatus.asObservable();
+  }
+}
+📌 📂 app.component.ts
+
+import { Component } from '@angular/core';
+import { AuthService } from './auth.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  userStatus: string = '';
+
+  constructor(private authService: AuthService) {}
+
+  ngOnInit() {
+    this.authService.getUserStatus().subscribe(status => {
+      this.userStatus = status;
+    });
+  }
+
+  login() {
+    this.authService.login();
+  }
+
+  logout() {
+    this.authService.logout();
+  }
+}
+📌 📂 app.component.html
+
+<h2>User Authentication</h2>
+<p>User Status: {{ userStatus }}</p>
+
+<button (click)="login()">Login</button>
+<button (click)="logout()">Logout</button>
+
+📌 Expected Behavior:
+
+Initially, it shows "Logged Out".
+Clicking Login → Updates status to "Logged In".
+Clicking Logout → Updates status to "Logged Out".
+New subscribers will receive the latest status immediately.
+
+🔹 Example 5: ReplaySubject with Multiple Components
+
+Scenario: We share the latest selected item across multiple components.
+📌 📂 shared.service.ts
+
+import { Injectable } from '@angular/core';
+import { ReplaySubject } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class SharedService {
+  private selectedItem = new ReplaySubject<string>(1); // Buffer: 1
+
+  selectItem(item: string) {
+    this.selectedItem.next(item);
+  }
+
+  getSelectedItem() {
+    return this.selectedItem.asObservable();
+  }
+}
+📌 📂 component-a.component.ts
+
+import { Component } from '@angular/core';
+import { SharedService } from '../shared.service';
+
+@Component({
+  selector: 'app-component-a',
+  templateUrl: './component-a.component.html'
+})
+export class ComponentA {
+  constructor(private sharedService: SharedService) {}
+
+  selectItem(item: string) {
+    this.sharedService.selectItem(item);
+  }
+}
+📌 📂 component-a.component.html
+
+<button (click)="selectItem('Item 1')">Select Item 1</button>
+<button (click)="selectItem('Item 2')">Select Item 2</button>
+
+📌 📂 component-b.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { SharedService } from '../shared.service';
+
+@Component({
+  selector: 'app-component-b',
+  templateUrl: './component-b.component.html'
+})
+export class ComponentB implements OnInit {
+  selectedItem: string = '';
+
+  constructor(private sharedService: SharedService) {}
+
+  ngOnInit() {
+    this.sharedService.getSelectedItem().subscribe(item => {
+      this.selectedItem = item;
+    });
+  }
+}
+📌 📂 component-b.component.html
+
+<p>Selected Item: {{ selectedItem }}</p>
+📌 Expected Behavior:
+
+Clicking a button in Component A updates the selected item.
+Component B automatically updates with the selected item.
+If Component B is loaded later, it still gets the last selected item.
+🔹 When to Use ReplaySubject?
+✅ Sharing past values with new subscribers.
+✅ Caching the latest state for late subscribers.
+✅ Handling user authentication state in services.
+✅ Maintaining state across components.
+
+🔹 Summary
+ReplaySubject re-emits previous values to new subscribers.
+You can control buffer size and time window.
+Used in services, authentication, shared data, and more.
+
+
+Consuming Web Services :
+
+
+Angular provides powerful tools to consume web services using HttpClient from @angular/common/http. Let's start with the basics and move to advanced concepts with examples.
+
+🔹 Step 1: Setup HttpClientModule
+
+Before making HTTP requests, we need to import HttpClientModule in our AppModule.
+
+📌 src/app/app.module.ts
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { HttpClientModule } from '@angular/common/http'; // Import HttpClientModule
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,
+    HttpClientModule, // Add HttpClientModule here
+  ],
+  providers: [],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+🔹 Step 2: Create a Service to Handle API Requests
+Instead of calling APIs directly in the component, we create a service to handle all HTTP requests.
+
+📌 Generate a Service using CLI
+
+ng generate service services/api
+
+📌 src/app/services/api.service.ts
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ApiService {
+  private apiUrl = 'https://jsonplaceholder.typicode.com/users'; // Example API
+
+  constructor(private http: HttpClient) {}
+
+  // Fetch all users
+  getUsers(): Observable<any> {
+    return this.http.get<any>(this.apiUrl);
+  }
+}
+🔹 Step 3: Consume the API in a Component
+Now, we use ApiService in a component to fetch and display data.
+
+📌 src/app/app.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { ApiService } from './services/api.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+})
+export class AppComponent implements OnInit {
+  users: any[] = [];
+
+  constructor(private apiService: ApiService) {}
+
+  ngOnInit() {
+    this.apiService.getUsers().subscribe((data) => {
+      this.users = data;
+    });
+  }
+}
+📌 src/app/app.component.html
+
+<h2>Users List</h2>
+<ul>
+  <li *ngFor="let user of users">
+    {{ user.name }} - {{ user.email }}
+  </li>
+</ul>
+✅ Run the App:
+
+ng serve -o
+
+✔️ This will display a list of users fetched from an API.
+
+🔹 Intermediate: Performing CRUD Operations
+Let's extend our API service to support Create, Read, Update, and Delete (CRUD) operations.
+
+📌 Update src/app/services/api.service.ts
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ApiService {
+  private apiUrl = 'https://jsonplaceholder.typicode.com/users';
+
+  constructor(private http: HttpClient) {}
+
+  // Fetch all users (GET)
+  getUsers(): Observable<any> {
+    return this.http.get<any>(this.apiUrl);
+  }
+
+  // Fetch user by ID (GET)
+  getUserById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  }
+
+  // Add a new user (POST)
+  addUser(user: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, user);
+  }
+
+  // Update user data (PUT)
+  updateUser(id: number, user: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, user);
+  }
+
+  // Delete user (DELETE)
+  deleteUser(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`);
+  }
+}
+🔹 Step 4: Calling CRUD Methods in Component
+Now, let's create UI buttons to add, update, and delete users.
+
+📌 Update src/app/app.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { ApiService } from './services/api.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+})
+export class AppComponent implements OnInit {
+  users: any[] = [];
+
+  constructor(private apiService: ApiService) {}
+
+  ngOnInit() {
+    this.fetchUsers();
+  }
+
+  fetchUsers() {
+    this.apiService.getUsers().subscribe((data) => {
+      this.users = data;
+    });
+  }
+
+  addUser() {
+    const newUser = { name: 'New User', email: 'newuser@example.com' };
+    this.apiService.addUser(newUser).subscribe(() => {
+      this.fetchUsers();
+    });
+  }
+
+  updateUser(id: number) {
+    const updatedUser = { name: 'Updated User', email: 'updated@example.com' };
+    this.apiService.updateUser(id, updatedUser).subscribe(() => {
+      this.fetchUsers();
+    });
+  }
+
+  deleteUser(id: number) {
+    this.apiService.deleteUser(id).subscribe(() => {
+      this.fetchUsers();
+    });
+  }
+}
+📌 Update src/app/app.component.html
+
+<h2>Users List</h2>
+<button (click)="addUser()">Add User</button>
+<ul>
+  <li *ngFor="let user of users">
+    {{ user.name }} - {{ user.email }}
+    <button (click)="updateUser(user.id)">Update</button>
+    <button (click)="deleteUser(user.id)">Delete</button>
+  </li>
+</ul>
+✔️ This will allow adding, updating, and deleting users dynamically.
+
+🔹 Advanced: Handling Errors and Loading States
+
+In real-world applications, API calls might fail. We should handle errors properly.
+
+📌 Update src/app/services/api.service.ts
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ApiService {
+  private apiUrl = 'https://jsonplaceholder.typicode.com/users';
+
+  constructor(private http: HttpClient) {}
+
+  getUsers(): Observable<any> {
+    return this.http.get<any>(this.apiUrl).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    console.error('Error fetching data:', error.message);
+    return throwError(() => new Error('Something went wrong. Please try again later.'));
+  }
+}
+
+📌 Modify src/app/app.component.ts
+
+loading = false;
+errorMessage = '';
+
+fetchUsers() {
+  this.loading = true;
+  this.apiService.getUsers().subscribe({
+    next: (data) => {
+      this.users = data;
+      this.loading = false;
+    },
+    error: (err) => {
+      this.errorMessage = err.message;
+      this.loading = false;
+    },
+  });
+}
+
+📌 Modify src/app/app.component.html
+
+<p *ngIf="loading">Loading users...</p>
+<p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
+
+✅ Summary
+
+✔ Basic API Consumption – Fetching data using HttpClient.
+✔ CRUD Operations – Performing Create, Read, Update, and Delete.
+✔ Error Handling – Using catchError() to handle failures.
+✔ Loading State – Showing a loading indicator when fetching data.
+
+

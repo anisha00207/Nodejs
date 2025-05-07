@@ -1,0 +1,2001 @@
+Need for Pipes in Angular
+
+In Angular, pipes are used to transform data before displaying it in the UI. They help in formatting data in a clean and reusable way without modifying the original data source. Instead of writing custom logic inside templates or components, we use pipes to format values like dates, numbers, currency, percentages, and more.
+
+Why Use Pipes?
+Data Formatting: Pipes allow easy transformation of data before displaying it.
+Readability & Maintainability: Keeps templates clean by avoiding inline logic.
+Reusability: The same pipe can be used in multiple components and templates.
+Performance Optimization: Angular executes pipes efficiently and only recalculates when necessary (pure pipes).
+Types of Pipes in Angular
+Angular provides two types of pipes:
+
+Built-in Pipes (Provided by Angular)
+Custom Pipes (User-defined)
+
+1. Built-in Pipes in Angular
+
+Angular provides several built-in pipes for common data transformations.
+
+Example 1: Using Built-in Pipes (Simple)
+
+Let’s take a simple example of using built-in pipes in an Angular component.
+
+<p> {{ "angular pipes" | uppercase }} </p>  <!-- Output: ANGULAR PIPES -->
+<p> {{ "ANGULAR PIPES" | lowercase }} </p>  <!-- Output: angular pipes -->
+<p> {{ 1000 | currency:'USD' }} </p>        <!-- Output: $1,000.00 -->
+<p> {{ 0.75 | percent }} </p>               <!-- Output: 75% -->
+<p> {{ today | date:'longDate' }} </p>      <!-- Output: February 25, 2025 -->
+
+Example 2: Using Multiple Pipes
+
+You can chain multiple pipes together.
+
+<p> {{ "hello world" | uppercase | slice:0:5 }} </p>  <!-- Output: HELLO -->
+
+2. Custom Pipes in Angular
+
+Sometimes, built-in pipes are not enough. You may need to create custom pipes.
+
+Example 3: Creating a Simple Custom Pipe
+
+Let’s create a pipe that converts a string into title case (first letter capitalized).
+
+Step 1: Generate a Pipe
+
+Run the following command:
+
+ng generate pipe titlecase
+
+This generates titlecase.pipe.ts and titlecase.pipe.spec.ts.
+
+Step 2: Implement the Pipe
+
+Modify titlecase.pipe.ts:
+
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({
+  name: 'titlecase'
+})
+export class TitlecasePipe implements PipeTransform {
+  transform(value: string): string {
+    if (!value) return '';
+    return value
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+}
+
+Step 3: Use the Pipe in a Component
+
+<p> {{ "hello angular world" | titlecase }} </p>  <!-- Output: Hello Angular World -->
+
+3. Advanced Custom Pipe (Filtering an Array)
+
+Let’s create a pipe that filters a list based on search input.
+
+Example 4: Creating a Filter Pipe
+
+Step 1: Generate a Pipe
+
+ng generate pipe filter
+
+Step 2: Implement the Pipe
+
+Modify filter.pipe.ts:
+
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({
+  name: 'filter'
+})
+export class FilterPipe implements PipeTransform {
+  transform(items: any[], searchText: string): any[] {
+    if (!items || !searchText) return items;
+    searchText = searchText.toLowerCase();
+    return items.filter(item => item.name.toLowerCase().includes(searchText));
+  }
+}
+
+Step 3: Use the Pipe in a Component
+
+Modify app.component.ts:
+
+export class AppComponent {
+  searchText: string = '';
+  users = [
+    { name: 'Alice' },
+    { name: 'Bob' },
+    { name: 'Charlie' },
+    { name: 'David' }
+  ];
+}
+Modify app.component.html:
+
+<input type="text" [(ngModel)]="searchText" placeholder="Search user">
+<ul>
+  <li *ngFor="let user of users | filter:searchText">{{ user.name }}</li>
+</ul>
+🔹 Now, when you type "bo" in the search box, it will only show "Bob".
+
+4. Pure vs Impure Pipes
+
+Pure Pipes: Recomputed only when input changes. Default behavior.
+Impure Pipes: Recomputed on every change detection cycle.
+
+To make a pipe impure, modify the decorator:
+
+@Pipe({
+  name: 'filter',
+  pure: false
+})
+
+
+
+Pure and Impure Pipes in Angular
+
+In Angular, Pipes are used to transform data before displaying it in the UI. Pipes can be Pure or Impure, depending on how they react to changes in data.
+
+1. Pure Pipes
+
+A pure pipe executes only when its input changes (by reference). It does not execute when a property of an object or array is modified.
+
+Example 1: Creating a Simple Pure Pipe
+
+By default, all pipes in Angular are pure unless explicitly marked as pure: false.
+
+Steps to Create a Pure Pipe
+Generate a pipe using Angular CLI:
+
+ng generate pipe pureExample
+
+Implement the pure pipe:
+
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({
+  name: 'pureExample'
+})
+export class PureExamplePipe implements PipeTransform {
+  transform(value: string): string {
+    console.log('Pure Pipe Executed');
+    return value.toUpperCase();
+  }
+}
+
+Usage in Template:
+
+<p>{{ 'angular' | pureExample }}</p>
+
+The pipe runs only when the string changes.
+
+Example 2: Pure Pipe with Objects
+
+If we pass an object, the pure pipe will not execute when only a property of the object changes; it executes only when the whole object reference is replaced.
+
+@Pipe({
+  name: 'objectPure',
+})
+
+export class ObjectPurePipe implements PipeTransform {
+  transform(user: { name: string }): string {
+    console.log('Pure Pipe Executed');
+    return user.name.toUpperCase();
+  }
+}
+
+Usage in Component
+
+export class AppComponent {
+  user = { name: 'John' };
+
+  changeName() {
+    this.user.name = 'Doe';  // Pipe will NOT execute
+  }
+
+  changeObject() {
+    this.user = { name: 'Doe' };  // Pipe WILL execute
+  }
+}
+
+Usage in Template
+
+<p>{{ user | objectPure }}</p>
+<button (click)="changeName()">Change Name</button>
+<button (click)="changeObject()">Change Object</button>
+Clicking Change Name → No pipe execution
+Clicking Change Object → Pipe executes
+
+2. Impure Pipes
+
+An impure pipe runs on every change detection cycle, even if the input object reference hasn't changed.
+
+Example 3: Creating an Impure Pipe
+
+To make a pipe impure, set pure: false in the decorator.
+
+@Pipe({
+  name: 'impureExample',
+  pure: false
+})
+
+export class ImpureExamplePipe implements PipeTransform {
+  transform(value: string): string {
+    console.log('Impure Pipe Executed');
+    return value.toUpperCase();
+  }
+}
+
+Usage in Template
+
+<p>{{ 'angular' | impureExample }}</p>
+
+The pipe executes on every change detection cycle.
+
+Example 4: Impure Pipe with Arrays
+
+An impure pipe is useful when working with arrays or objects that change frequently.
+
+@Pipe({
+  name: 'filterArray',
+  pure: false
+})
+export class FilterArrayPipe implements PipeTransform {
+  transform(items: string[], search: string): string[] {
+    console.log('Impure Pipe Executed');
+    return items.filter(item => item.includes(search));
+  }
+}
+
+Usage in Component
+
+export class AppComponent {
+  items = ['Angular', 'React', 'Vue'];
+  searchText = '';
+
+  addItem() {
+    this.items.push('Svelte');  // Pipe executes
+  }
+}
+
+Usage in Template
+
+<input [(ngModel)]="searchText" placeholder="Search">
+<ul>
+  <li *ngFor="let item of items | filterArray: searchText">{{ item }}</li>
+</ul>
+<button (click)="addItem()">Add Item</button>
+Typing in the input field triggers the pipe every time.
+Clicking "Add Item" also triggers the pipe even though the array reference didn't change.
+Comparison: Pure vs Impure Pipes
+Feature	Pure Pipe	Impure Pipe
+Execution	Only when input reference changes	Runs on every change detection cycle
+Performance	More optimized, runs less frequently	Less optimized, runs frequently
+Suitable For	Static values, primitive types	Dynamic lists, objects, arrays
+Example Use Case	Uppercasing a string	Filtering an array dynamically
+
+When to Use Which?
+
+Use Pure Pipes when the transformation depends only on primitive values or object references.
+Use Impure Pipes when dealing with frequently changing data, such as lists that update dynamically.
+
+
+
+Using Built-in Pipes in Angular with Examples (From Simple to Advanced)
+Angular provides pipes to transform data in templates. Pipes help format and manipulate values such as strings, numbers, dates, and more.
+
+1. Introduction to Angular Pipes
+
+Pipes transform data before displaying it in the template.
+
+Syntax:
+
+{{ value | pipeName }}
+
+Pipes can be chained:
+
+{{ value | pipe1 | pipe2 }}
+
+Pipes can accept parameters:
+
+{{ value | pipeName:param1:param2 }}
+
+2. Common Built-in Pipes in Angular
+
+Angular provides several built-in pipes:
+
+Pipe Name	Description
+DatePipe	 Formats date values
+UpperCasePipe	Converts text to uppercase
+LowerCasePipe	Converts text to lowercase
+TitleCasePipe	Capitalizes the first letter of each word
+CurrencyPipe	Formats numbers as currency
+DecimalPipe	Formats numbers with decimal places
+PercentPipe	Formats numbers as percentages
+SlicePipe	Extracts a portion of an array or string
+JSONPipe	Converts an object to a JSON string
+KeyValuePipe	Converts an object into an array of key-value pairs
+
+3. Simple Examples of Built-in Pipes
+
+Example 1: UpperCasePipe and LowerCasePipe
+
+<p>{{ 'angular pipes' | uppercase }}</p> <!-- Output: ANGULAR PIPES -->
+<p>{{ 'ANGULAR PIPES' | lowercase }}</p> <!-- Output: angular pipes -->
+
+Example 2: DatePipe
+
+<p>{{ today | date:'short' }}</p>    <!-- Output: 3/2/25, 10:15 AM -->
+<p>{{ today | date:'fullDate' }}</p> <!-- Output: Sunday, March 2, 2025 -->
+
+export class AppComponent {
+  today: Date = new Date();
+}
+
+Example 3: CurrencyPipe
+
+<p>{{ price | currency:'USD' }}</p>  <!-- Output: $1,000.50 -->
+<p>{{ price | currency:'EUR':'symbol' }}</p> <!-- Output: €1,000.50 -->
+<p>{{ price | currency:'INR':'symbol' }}</p> <!-- Output: ₹1,000.50 -->
+
+export class AppComponent {
+  price: number = 1000.50;
+}
+
+4. Intermediate Examples of Pipes
+
+Example 4: SlicePipe (Extracting part of an array or string)
+
+<p>{{ 'Angular Pipes Example' | slice:8 }}</p> <!-- Output: Pipes Example -->
+<p>{{ 'Angular Pipes Example' | slice:8:13 }}</p> <!-- Output: Pipes -->
+
+For arrays:
+
+<ul>
+  <li *ngFor="let num of numbers | slice:1:4">{{ num }}</li>
+</ul>
+
+export class AppComponent {
+  numbers: number[] = [10, 20, 30, 40, 50];
+}
+
+Output:
+
+20
+30
+40
+
+Example 5: PercentPipe
+
+<p>{{ progress | percent }}</p> <!-- Output: 50% -->
+<p>{{ progress | percent:'1.1-2' }}</p> <!-- Output: 50.0% -->
+
+export class AppComponent {
+  progress: number = 0.5;
+}
+
+Example 6: DecimalPipe
+<p>{{ 12345.6789 | number:'1.2-3' }}</p> <!-- Output: 12,345.679 -->
+<p>{{ 12345.6789 | number:'3.1-2' }}</p> <!-- Output: 012,345.68 -->
+
+5. Advanced Examples of Built-in Pipes
+
+Example 7: JSONPipe (Convert an Object to JSON String)
+
+<pre>{{ student | json }}</pre>
+
+export class AppComponent {
+  student = { name: 'John', age: 25, city: 'New York' };
+}
+Output:
+
+{
+  "name": "John",
+  "age": 25,
+  "city": "New York"
+}
+
+Example 8: KeyValuePipe (Convert Object to Key-Value Array)
+
+<ul>
+  <li *ngFor="let item of student | keyvalue">
+    {{ item.key }}: {{ item.value }}
+  </li>
+</ul>
+
+export class AppComponent {
+  student = { name: 'John', age: 25, city: 'New York' };
+}
+
+Output:
+
+name: John
+age: 25
+city: New York
+
+6. Combining Multiple Pipes
+
+Example 9: Chaining Pipes
+
+<p>{{ 'angular pipes example' | titlecase | slice:0:15 }}</p>
+
+Output:
+
+Angular Pipes Ex
+
+Example 10: Using Pipes in Component with Parameters
+
+<p>{{ salary | currency:currencyCode }}</p>
+
+export class AppComponent {
+  salary = 5000;
+  currencyCode = 'USD';
+}
+
+Output: $5,000.00
+
+
+DatePipe in Angular - A Complete Guide :
+
+What is DatePipe in Angular?
+
+DatePipe is a built-in Angular pipe used to format dates. It allows developers to display dates in different formats, such as short date, long date, or a custom format. It is commonly used in templates to transform date values dynamically.
+
+How to Use DatePipe in Angular :
+
+Import the CommonModule (if using in a module).
+
+Use the date pipe in a template or component.
+
+Basic Usage of DatePipe
+
+Example 1: Default Formatting
+
+By default, DatePipe formats the date in medium date format.
+
+<p>Today: {{ today | date }}</p>
+
+
+Component Code
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  template: `<p>Today: {{ today | date }}</p>`
+})
+export class AppComponent {
+  today: Date = new Date();
+}
+📌 Output (varies by locale):
+
+Today: Mar 2, 2025
+
+Different Date Formats in Angular
+
+Angular DatePipe provides several predefined formats:
+
+Format Name	Pipe Expression	Example Output
+Short Date	`{{ today	date:'shortDate' }}`
+Medium Date	`{{ today	date:'mediumDate' }}`
+Long Date	`{{ today	date:'longDate' }}`
+Full Date	`{{ today	date:'fullDate' }}`
+Short Time	`{{ today	date:'shortTime' }}`
+Medium Time	`{{ today	date:'mediumTime' }}`
+Long Time	`{{ today	date:'longTime' }}`
+
+Example 2: Using Predefined Formats
+
+<p>Short Date: {{ today | date:'shortDate' }}</p>
+<p>Medium Date: {{ today | date:'mediumDate' }}</p>
+<p>Long Date: {{ today | date:'longDate' }}</p>
+<p>Full Date: {{ today | date:'fullDate' }}</p>
+<p>Short Time: {{ today | date:'shortTime' }}</p>
+<p>Medium Time: {{ today | date:'mediumTime' }}</p>
+<p>Long Time: {{ today | date:'longTime' }}</p>
+📌 Output:
+
+Short Date: 3/2/25
+Medium Date: Mar 2, 2025
+Long Date: March 2, 2025
+Full Date: Sunday, March 2, 2025
+Short Time: 10:30 AM
+Medium Time: 10:30:15 AM
+Long Time: 10:30:15 AM GMT+5:30
+
+Custom Date Formats
+
+Example 3: Custom Date Formatting
+
+You can specify a custom format using patterns like:
+
+dd/MM/yyyy
+MM/dd/yyyy
+yyyy-MM-dd
+EEEE, MMMM d, y
+
+<p>Custom Format 1: {{ today | date:'dd/MM/yyyy' }}</p>
+<p>Custom Format 2: {{ today | date:'MM/dd/yyyy' }}</p>
+<p>Custom Format 3: {{ today | date:'yyyy-MM-dd' }}</p>
+<p>Custom Format 4: {{ today | date:'EEEE, MMMM d, y' }}</p>
+📌 Output:
+
+Custom Format 1: 02/03/2025
+Custom Format 2: 03/02/2025
+Custom Format 3: 2025-03-02
+Custom Format 4: Sunday, March 2, 2025
+
+Using DatePipe in TypeScript
+
+If you need to use DatePipe inside a component instead of the template, you need to inject it.
+
+Example 4: Using DatePipe in Component
+import { Component } from '@angular/core';
+import { DatePipe } from '@angular/common';
+
+@Component({
+  selector: 'app-root',
+  template: `<p>Formatted Date: {{ formattedDate }}</p>`,
+  providers: [DatePipe] // Provide DatePipe in the component
+})
+export class AppComponent {
+  today: Date = new Date();
+  formattedDate: string;
+
+  constructor(private datePipe: DatePipe) {
+    this.formattedDate = this.datePipe.transform(this.today, 'fullDate') || '';
+  }
+}
+📌 Output:
+
+Formatted Date: Sunday, March 2, 2025
+
+Handling Timezones with DatePipe :
+
+By default, DatePipe uses the local timezone. You can specify a different timezone if needed.
+
+Example 5: Using Timezones :
+
+<p>UTC Time: {{ today | date:'medium' : 'UTC' }}</p>
+<p>IST Time: {{ today | date:'medium' : 'Asia/Kolkata' }}</p>
+📌 Output (depending on system time):
+
+UTC Time: Mar 2, 2025, 5:00 AM
+IST Time: Mar 2, 2025, 10:30 AM
+
+Using DatePipe in Reactive Forms
+
+If you are working with Angular Forms, you may need to format the date before displaying it.
+
+Example 6: Formatting Date in Reactive Form
+
+import { Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { DatePipe } from '@angular/common';
+
+@Component({
+  selector: 'app-root',
+  template: `<input [formControl]="dateControl">`,
+  providers: [DatePipe]
+})
+export class AppComponent {
+  dateControl = new FormControl('');
+
+  constructor(private datePipe: DatePipe) {
+    let today = new Date();
+    this.dateControl.setValue(this.datePipe.transform(today, 'yyyy-MM-dd'));
+  }
+}
+📌 Output in Input Field:
+
+2025-03-02
+
+Using DatePipe with Dynamic Dates
+
+Example 7: Adding/Subtracting Days
+
+You can use JavaScript to modify the date dynamically before applying DatePipe.
+
+let today = new Date();
+let nextWeek = new Date();
+nextWeek.setDate(today.getDate() + 7);
+
+console.log(this.datePipe.transform(nextWeek, 'fullDate')); // Output: Sunday, March 9, 2025
+
+
+
+UpperCasePipe in Angular: A Complete Guide with Examples
+In Angular, the UpperCasePipe is a built-in pipe that transforms text into uppercase. It is particularly useful when you need to display text in uppercase format without modifying the actual data.
+
+1. Basic Syntax of UpperCasePipe
+
+{{ value | uppercase }}
+value is the input string that needs to be transformed into uppercase.
+uppercase is the built-in pipe in Angular.
+
+2. Importing UpperCasePipe
+
+The UpperCasePipe is available by default in CommonModule, so there’s no need for an explicit import. However, if needed, you can import it as follows:
+
+import { UpperCasePipe } from '@angular/common';
+
+3. Simple Example: Convert Static Text to Uppercase
+<p>{{ 'hello world' | uppercase }}</p>
+Output:
+
+HELLO WORLD
+
+4. Using UpperCasePipe with Component Properties
+
+In a component, you may have a property that you want to display in uppercase.
+
+Component (TypeScript)
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-example',
+  template: `<p>{{ message | uppercase }}</p>`,
+})
+export class ExampleComponent {
+  message: string = 'angular pipes are useful';
+}
+
+Output:
+
+ANGULAR PIPES ARE USEFUL
+
+5. Using UpperCasePipe with User Input (Two-way Binding)
+
+You can apply UpperCasePipe to transform user input in real time.
+
+Component (TypeScript)
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-input-uppercase',
+  template: `
+    <input type="text" [(ngModel)]="userInput" placeholder="Type something">
+    <p>Uppercase Output: {{ userInput | uppercase }}</p>
+  `,
+})
+export class InputUppercaseComponent {
+  userInput: string = '';
+}
+Output:
+If the user types "angular", the output will be "ANGULAR".
+
+*6. Using UpperCasePipe Inside an ngFor Directive
+
+You can use UpperCasePipe inside *ngFor to transform array elements.
+
+Component (TypeScript)
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-students',
+  template: `
+    <ul>
+      <li *ngFor="let student of students">{{ student | uppercase }}</li>
+    </ul>
+  `,
+})
+export class StudentsComponent {
+  students: string[] = ['john', 'mary', 'peter'];
+}
+
+Output:
+- JOHN
+- MARY
+- PETER
+
+7. Using UpperCasePipe in a Custom Pipe
+
+You can also use UpperCasePipe inside a custom pipe.
+
+Custom Pipe (TypeScript)
+import { Pipe, PipeTransform } from '@angular/core';
+import { UpperCasePipe } from '@angular/common';
+
+@Pipe({
+  name: 'customUppercase'
+})
+export class CustomUppercasePipe implements PipeTransform {
+  constructor(private uppercasePipe: UpperCasePipe) {}
+
+  transform(value: string): string {
+    return this.uppercasePipe.transform(value) + '!!!';
+  }
+}
+Usage in Template
+<p>{{ 'hello world' | customUppercase }}</p>
+
+Output:
+
+HELLO WORLD!!!
+
+8. UpperCasePipe with AsyncPipe (Fetching API Data)
+
+When using async data, you can apply UpperCasePipe to dynamically fetched content.
+
+Component (TypeScript)
+import { Component } from '@angular/core';
+import { Observable, of } from 'rxjs';
+
+@Component({
+  selector: 'app-async-uppercase',
+  template: `<p>{{ userData$ | async | uppercase }}</p>`,
+})
+export class AsyncUppercaseComponent {
+  userData$: Observable<string> = of('hello from api');
+}
+Output:
+HELLO FROM API
+
+9. Using UpperCasePipe in Reactive Forms
+
+You can use UpperCasePipe with Angular Reactive Forms to display transformed form values.
+
+Component (TypeScript)
+import { Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
+
+@Component({
+  selector: 'app-form-uppercase',
+  template: `
+    <form>
+      <label>Enter Name:</label>
+      <input [formControl]="nameControl">
+      <p>Uppercase: {{ nameControl.value | uppercase }}</p>
+    </form>
+  `,
+})
+export class FormUppercaseComponent {
+  nameControl = new FormControl('');
+}
+Output:
+
+If the user types "angular form", the output will be "ANGULAR FORM".
+
+10. UpperCasePipe with Custom Directive
+
+You can create a directive that automatically converts user input to uppercase.
+
+Directive (TypeScript)
+import { Directive, ElementRef, HostListener } from '@angular/core';
+
+@Directive({
+  selector: '[appUpperCaseInput]'
+})
+export class UpperCaseInputDirective {
+  constructor(private el: ElementRef) {}
+
+  @HostListener('input', ['$event']) onInputChange(event: any) {
+    this.el.nativeElement.value = event.target.value.toUpperCase();
+  }
+}
+Usage in Template
+<input type="text" appUpperCaseInput placeholder="Type here">
+The text inside the input box will always be converted to uppercase as the user types.
+
+
+LowerCasePipe in Angular - Explanation with Examples
+What is LowerCasePipe?
+LowerCasePipe is a built-in Angular pipe that transforms a given string into lowercase. It is useful when you need to ensure uniform text formatting, such as user input normalization or display consistency.
+
+Module: LowerCasePipe is part of CommonModule in Angular, so it is available by default in any Angular application.
+Basic Syntax
+{{ value | lowercase }}
+Here, value is a string that will be converted to lowercase.
+
+Example 1: Basic Usage
+Component HTML
+<p>Original Text: {{ message }}</p>
+<p>Lowercase Text: {{ message | lowercase }}</p>
+Component TS
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-lowercase-example',
+  templateUrl: './lowercase-example.component.html',
+})
+export class LowercaseExampleComponent {
+  message: string = 'Hello ANGULAR!';
+}
+Output
+Original Text: Hello ANGULAR!
+Lowercase Text: hello angular!
+
+Example 2: LowerCasePipe with User Input
+
+In this example, we will use LowerCasePipe with a user input field.
+
+Component HTML
+<input type="text" [(ngModel)]="userInput" placeholder="Enter text here">
+<p>Transformed Text: {{ userInput | lowercase }}</p>
+Component TS
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-lowercase-input',
+  templateUrl: './lowercase-input.component.html',
+})
+export class LowercaseInputComponent {
+  userInput: string = '';
+}
+Behavior
+As the user types in the input field, the text is automatically converted to lowercase in real-time.
+*Example 3: LowerCasePipe in an ngFor Loop
+When displaying a list of names, we can use LowerCasePipe to ensure uniform casing.
+
+Component TS
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-lowercase-list',
+  templateUrl: './lowercase-list.component.html',
+})
+export class LowercaseListComponent {
+  names: string[] = ['John Doe', 'Alice SMITH', 'Bob JONES'];
+}
+Component HTML
+<ul>
+  <li *ngFor="let name of names">{{ name | lowercase }}</li>
+</ul>
+Output
+john doe
+alice smith
+bob jones
+
+Example 4: LowerCasePipe in a Custom Pipe
+
+What if we want a custom pipe that applies LowerCasePipe along with additional transformations? Let's create one.
+
+Custom Pipe Implementation
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({
+  name: 'customLowercase'
+})
+export class CustomLowercasePipe implements PipeTransform {
+  transform(value: string, appendText: string = ''): string {
+    return value.toLowerCase() + appendText;
+  }
+}
+Component HTML
+<p>{{ 'Angular PIPES' | customLowercase:' - processed' }}</p>
+Output
+angular pipes - processed
+Here, our custom pipe applies lowercase and appends - processed to the string.
+
+Example 5: LowerCasePipe in a Service
+
+We can also use LowerCasePipe in an Angular service.
+
+
+import { Injectable } from '@angular/core';
+import { LowerCasePipe } from '@angular/common';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class TextService {
+  constructor(private lowerCasePipe: LowerCasePipe) {}
+
+  transformText(text: string): string {
+    return this.lowerCasePipe.transform(text);
+  }
+}
+Component TS
+import { Component, OnInit } from '@angular/core';
+import { TextService } from './text.service';
+
+@Component({
+  selector: 'app-lowercase-service',
+  templateUrl: './lowercase-service.component.html',
+})
+export class LowercaseServiceComponent implements OnInit {
+  transformedText: string = '';
+
+  constructor(private textService: TextService) {}
+
+  ngOnInit() {
+    this.transformedText = this.textService.transformText('WELCOME TO ANGULAR!');
+  }
+}
+
+Component HTML
+
+<p>Service Transformed Text: {{ transformedText }}</p>
+
+Output
+
+Service Transformed Text: welcome to angular!
+Summary
+Scenario	Description
+Basic Usage	Converts a static string to lowercase
+With User Input	Converts text entered by the user dynamically
+*Inside ngFor Loop	Applies lowercase transformation to a list of names
+Custom Pipe	Extends LowerCasePipe functionality with additional transformations
+Used in a Service	Demonstrates LowerCasePipe usage inside an Angular service
+
+
+TitleCasePipe in Angular :
+
+The TitleCasePipe in Angular is a built-in pipe used to transform a given string into Title Case, where the first letter of each word is capitalized while all other letters remain lowercase.
+
+Syntax:
+{{ value | titlecase }}
+Simple Example
+Let's start with a simple example where we use TitleCasePipe in an Angular template.
+
+Example 1: Basic Usage
+<p>{{ 'hello world' | titlecase }}</p>
+
+Output:
+
+Hello World
+Here, both "hello" and "world" have their first letters capitalized.
+
+Example 2: Using TitleCasePipe with a Variable in Component
+We can also use TitleCasePipe on a variable.
+
+Component (TypeScript)
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-titlecase-demo',
+  template: `<p>{{ message | titlecase }}</p>`
+})
+export class TitleCaseDemoComponent {
+  message = 'angular titlecase pipe example';
+}
+Output:
+Angular Titlecase Pipe Example
+
+Example 3: Using TitleCasePipe in a Loop
+
+Let's say we have an array of strings and we want to apply TitleCasePipe to each element.
+
+Component
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-titlecase-list',
+  template: `
+    <ul>
+      <li *ngFor="let item of items">{{ item | titlecase }}</li>
+    </ul>
+  `
+})
+export class TitleCaseListComponent {
+  items = ['angular', 'react', 'vue js', 'node js'];
+}
+Output:
+- Angular
+- React
+- Vue Js
+- Node Js
+
+Example 4: Handling User Input
+
+We can use TitleCasePipe dynamically with user input.
+
+Component (TypeScript)
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-titlecase-input',
+  template: `
+    <input [(ngModel)]="userInput" placeholder="Enter text">
+    <p>Formatted: {{ userInput | titlecase }}</p>
+  `
+})
+export class TitleCaseInputComponent {
+  userInput = '';
+}
+
+Behavior:
+
+When the user types "hello angular titlecase", the displayed text becomes "Hello Angular Titlecase".
+
+Example 5: Custom Title Case Transformation (Advanced)
+
+Sometimes, you may want more control over title casing, like keeping certain words in lowercase (e.g., "of", "in", "the").
+
+Let's create a custom pipe that follows a smarter title-casing approach.
+
+Custom Pipe: SmartTitleCasePipe
+
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({
+  name: 'smartTitlecase'
+})
+export class SmartTitleCasePipe implements PipeTransform {
+  transform(value: string): string {
+    if (!value) return value;
+
+    const lowercaseWords = ['of', 'the', 'in', 'and', 'or', 'on'];
+    return value
+      .toLowerCase()
+      .split(' ')
+      .map((word, index) => 
+        lowercaseWords.includes(word) && index !== 0 
+          ? word 
+          : word.charAt(0).toUpperCase() + word.slice(1)
+      )
+      .join(' ');
+  }
+}
+Usage in Component
+
+<p>{{ 'the lord of the rings' | smartTitlecase }}</p>
+Output:
+
+The Lord of the Rings
+"of" and "the" are not capitalized because they are common words that should remain lowercase unless they are the first word.
+
+
+CurrencyPipe in Angular
+
+CurrencyPipe is an Angular built-in pipe used to format numbers as currency. It is part of the CommonModule and 
+
+provides a way to format numbers into currency formats based on a specific locale.
+
+1. Importing and Using CurrencyPipe
+By default, CurrencyPipe is available in Angular and can be used in templates without any explicit import. However, if you need it in a component or service, you can import it from @angular/common.
+
+import { CurrencyPipe } from '@angular/common';
+Syntax
+
+{{ amount | currency : currencyCode : display : digitsInfo : locale }}
+amount - The number to be formatted.
+
+currencyCode - The currency code (e.g., USD, INR, EUR). Defaults to the locale currency.
+
+display - Determines how the currency symbol is displayed:
+"symbol" (default): Displays the currency symbol (e.g., $, €).
+"symbol-narrow": Uses a smaller currency symbol.
+"code": Displays the currency code (USD, INR).
+"name": Displays the full currency name.
+digitsInfo - Defines decimal digits format (minIntegerDigits.minFractionDigits-maxFractionDigits).
+locale - Specifies the locale ('en-US', 'fr-FR', etc.).
+
+Basic to Advanced Examples
+
+1. Simple Example - Default Formatting
+
+<p>{{ 1000 | currency }}</p>
+
+Output (in en-US locale):
+
+$1,000.00
+
+2. Using a Specific Currency Code
+
+<p>{{ 1000 | currency:'INR' }}</p>
+<p>{{ 1000 | currency:'EUR' }}</p>
+
+Output:
+
+₹1,000.00
+€1,000.00
+
+3. Using Different Display Formats
+
+<p>{{ 1000 | currency:'USD':'symbol' }}</p>  <!-- Default symbol -->
+<p>{{ 1000 | currency:'USD':'symbol-narrow' }}</p>  <!-- Narrow symbol -->
+<p>{{ 1000 | currency:'USD':'code' }}</p>  <!-- Displays currency code -->
+<p>{{ 1000 | currency:'USD':'name' }}</p>  <!-- Displays full currency name -->
+Output:
+
+$1,000.00
+$1,000.00
+USD1,000.00
+1,000.00 US dollars
+
+4. Customizing Decimal Digits
+
+<p>{{ 1234.5678 | currency:'USD':'symbol':'3.2-4' }}</p>
+<p>{{ 1234.5678 | currency:'EUR':'symbol':'1.0-0' }}</p>
+
+Output:
+
+$1,234.57
+€1,235
+
+5. Using Locale-Specific Formatting
+
+<p>{{ 1000 | currency:'USD':'symbol':'1.2-2':'fr-FR' }}</p>
+<p>{{ 1000 | currency:'INR':'symbol':'1.2-2':'hi-IN' }}</p>
+
+Output:
+
+1 000,00 $US  (French format)
+₹1,000.00  (Indian format)
+
+6. Using CurrencyPipe in Component Class
+
+If you need dynamic formatting in a component, inject CurrencyPipe and use it programmatically.
+
+import { Component } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
+
+@Component({
+  selector: 'app-root',
+  template: `<p>{{ formattedAmount }}</p>`,
+  providers: [CurrencyPipe]
+})
+export class AppComponent {
+  amount: number = 1234.5678;
+  formattedAmount: string;
+
+  constructor(private currencyPipe: CurrencyPipe) {
+    this.formattedAmount = this.currencyPipe.transform(this.amount, 'USD', 'symbol', '1.2-2', 'en-US') || '';
+  }
+}
+
+Output:
+
+$1,234.57
+
+7. Using CurrencyPipe in Reactive Forms
+
+If you need to format input fields dynamically:
+
+<input type="number" [value]="amount | currency:'USD':'symbol':'1.2-2'">
+
+8. Dynamically Changing Currency Using Dropdown
+
+<select [(ngModel)]="selectedCurrency">
+  <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
+</select>
+
+<p>{{ amount | currency:selectedCurrency }}</p>
+
+export class AppComponent {
+  amount = 2000;
+  selectedCurrency = 'USD';
+  currencies = ['USD', 'EUR', 'INR', 'GBP'];
+}
+Output:
+
+If USD is selected: $2,000.00
+If EUR is selected: €2,000.00
+
+
+
+DecimalPipe in Angular
+
+DecimalPipe is a built-in Angular pipe that formats numeric values as decimal numbers. It is part of the CommonModule and can be used to control the number of integer and fraction digits displayed.
+
+Importing DecimalPipe
+Before using DecimalPipe, make sure you import CommonModule in your module file (if not already imported):
+
+import { CommonModule } from '@angular/common';
+
+Alternatively, you can directly import and use DecimalPipe in a component:
+
+import { DecimalPipe } from '@angular/common';
+
+Basic Syntax
+
+{{ numberValue | number : format }}
+
+numberValue: The numeric value to be formatted.
+format: A string defining the minimum and maximum integer and fraction digits ({minIntegerDigits}.{minFractionDigits}-{maxFractionDigits}).
+Examples from Simple to Advanced
+
+1. Simple Example (Default Formatting)
+
+If no format is provided, Angular applies the default format: 1.0-3 (at least 1 integer digit and 0 to 3 decimal places).
+
+numberValue = 1234.56789;
+
+<p>{{ numberValue | number }}</p>
+
+Output:
+
+1,234.568
+
+2. Controlling Fraction Digits
+
+<p>{{ numberValue | number : '1.0-0' }}</p>  <!-- No decimal places -->
+<p>{{ numberValue | number : '1.2-2' }}</p>  <!-- Exactly 2 decimal places -->
+<p>{{ numberValue | number : '1.1-4' }}</p>  <!-- Between 1 and 4 decimal places -->
+
+Output:
+
+1,235
+1,234.57
+1,234.5679
+
+3. Formatting Large Numbers with Custom Integer Digits
+
+bigNumber = 4.56;
+
+<p>{{ bigNumber | number : '4.2-2' }}</p>  <!-- At least 4 integer digits -->
+
+Output:
+
+0004.56
+
+4. Using DecimalPipe in TypeScript (Component)
+
+Instead of using it in HTML templates, you can format numbers programmatically in TypeScript.
+
+import { Component } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+
+@Component({
+  selector: 'app-root',
+  template: `<p>Formatted Number: {{ formattedNumber }}</p>`,
+  providers: [DecimalPipe]
+})
+
+export class AppComponent {
+  formattedNumber: string;
+
+  constructor(private decimalPipe: DecimalPipe) {
+    const numberValue = 9876.54321;
+    this.formattedNumber = this.decimalPipe.transform(numberValue, '1.2-3') || '';
+  }
+}
+
+Output:
+
+9,876.543
+
+5. Formatting Dynamic Input (Two-Way Binding)
+
+You can format user input dynamically using DecimalPipe in a component.
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-decimal-example',
+  template: `
+    <input type="number" [(ngModel)]="userInput" />
+    <p>Formatted Number: {{ userInput | number : '1.2-2' }}</p>
+  `
+})
+export class DecimalExampleComponent {
+  userInput: number = 0;
+}
+
+If the user enters 1234.5678, the displayed output will be:
+
+Formatted Number: 1,234.57
+
+6. Localizing Decimal Separators
+
+Angular automatically applies locale-specific decimal and thousand separators.
+
+English Locale (Default)
+numberValue = 1234.56;
+
+<p>{{ numberValue | number }}</p>  <!-- 1,234.56 -->
+
+French Locale (Comma Instead of Dot)
+
+<p>{{ numberValue | number:'1.2-2':'fr' }}</p>  
+
+Output:
+
+1 234,56
+
+7. Custom Pipe Extending DecimalPipe
+
+You can create a custom pipe extending DecimalPipe to apply default formatting.
+
+import { Pipe, PipeTransform } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+
+@Pipe({ name: 'customDecimal' })
+export class CustomDecimalPipe implements PipeTransform {
+  constructor(private decimalPipe: DecimalPipe) {}
+
+  transform(value: number, format: string = '1.2-2'): string | null {
+    return this.decimalPipe.transform(value, format);
+  }
+}
+Usage in Template
+
+<p>{{ 1234.56789 | customDecimal }}</p>  
+
+Output:
+
+1,234.57
+
+
+PercentPipe in Angular - A Complete Guide with Examples
+
+What is PercentPipe?
+
+PercentPipe is a built-in pipe in Angular that formats a number as a percentage. It is useful when you want to display numerical values as percentages in an Angular template.
+
+Importing PercentPipe
+
+Before using PercentPipe, ensure you have imported CommonModule in your Angular module.
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { CommonModule } from '@angular/common';
+import { AppComponent } from './app.component';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule, CommonModule], // CommonModule is required for built-in pipes
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+
+Basic Usage of PercentPipe
+
+You can use PercentPipe directly in the template using the | percent syntax.
+
+Example 1: Basic Percentage Formatting
+
+<p>{{ 0.25 | percent }}</p>
+
+Output:
+
+
+25%
+
+Here, 0.25 is converted to 25% (multiplied by 100).
+
+Customizing PercentPipe
+
+You can customize the output format using parameters:
+
+{{ value | percent: digitsInfo:locale }}
+
+digitsInfo: Specifies the number of decimal places (minIntegerDigits.minFractionDigits-maxFractionDigits).
+locale: Defines the locale for formatting (e.g., 'en-US', 'fr-FR').
+
+Example 2: Setting Decimal Places
+
+<p>{{ 0.1234 | percent:'1.1-2' }}</p>
+
+Output:
+
+12.34%
+
+1.1-2: Minimum 1 integer digit, minimum 1 decimal place, maximum 2 decimal places.
+
+Advanced Examples
+
+Example 3: Handling Large Numbers
+
+<p>{{ 123456789 | percent }}</p>
+Output:
+
+12,345,678,900%
+
+Since 123456789 is multiplied by 100, the output becomes 12,345,678,900%.
+
+Example 4: Using PercentPipe with Different Locales
+If you need to format percentages based on a specific locale:
+
+<p>{{ 0.1234 | percent:'1.1-2':'fr-FR' }}</p>
+
+Output in French Locale:
+
+12,34 %
+French formatting uses a comma instead of a dot.
+
+Example 5: Using PercentPipe in TypeScript Component
+You can also use PercentPipe programmatically in a component.
+
+import { Component } from '@angular/core';
+import { PercentPipe } from '@angular/common';
+
+@Component({
+  selector: 'app-root',
+  template: `<p>{{ formattedValue }}</p>`,
+  providers: [PercentPipe]
+})
+export class AppComponent {
+  formattedValue: string;
+  
+  constructor(private percentPipe: PercentPipe) {
+    this.formattedValue = this.percentPipe.transform(0.4567, '1.2-3', 'en-US') || '';
+  }
+}
+Output:
+
+45.67%
+
+Example 6: PercentPipe with Dynamic Values
+
+If you're fetching values dynamically from an API or user input:
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <input type="number" [(ngModel)]="percentageValue" />
+    <p>Formatted Percentage: {{ percentageValue / 100 | percent:'1.0-2' }}</p>
+  `
+})
+export class AppComponent {
+  percentageValue = 25;
+}
+
+Output when user inputs 75:
+
+Formatted Percentage: 75.00%
+Summary Table of Usage
+Expression	Output
+`{{ 0.75	percent }}`
+`{{ 0.1234	percent:'1.1-2' }}`
+`{{ 0.1234	percent:'1.1-2':'fr-FR' }}`
+`{{ 123456	percent }}`
+
+
+SlicePipe in Angular
+
+SlicePipe is a built-in Angular pipe used to extract a portion (or slice) of an array or a string. It works similarly to 
+JavaScript’s .slice() method.
+
+Syntax
+
+{{ value | slice:start:end }}
+value: The input array or string.
+start: The beginning index (inclusive).
+end: The ending index (exclusive, optional).
+
+Examples
+
+1. Simple Example (Array)
+Component (TypeScript)
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  fruits: string[] = ['Apple', 'Banana', 'Cherry', 'Date', 'Fig', 'Grape'];
+}
+
+Template (HTML)
+
+<h3>Original Array:</h3>
+<p>{{ fruits }}</p>
+
+<h3>Sliced Array (Index 1 to 4):</h3>
+<p>{{ fruits | slice:1:4 }}</p>
+
+Output
+
+Original Array:
+
+Apple,Banana,Cherry,Date,Fig,Grape
+
+Sliced Array (Index 1 to 4):
+Banana,Cherry,Date
+
+2. Example with String
+
+Template (HTML)
+
+<h3>Original String:</h3>
+<p>{{ "Hello Angular" }}</p>
+
+<h3>Sliced String (First 5 characters):</h3>
+<p>{{ "Hello Angular" | slice:0:5 }}</p>
+
+Output
+Original String:
+
+Hello Angular
+
+Sliced String (First 5 characters):
+
+Hello
+
+3. Example Using Negative Index
+
+Negative values count from the end.
+
+Template (HTML)
+<h3>Last 3 Fruits:</h3>
+<p>{{ fruits | slice:-3 }}</p>
+Output
+Last 3 Fruits:
+Date,Fig,Grape
+
+*4. Using SlicePipe in ngFor
+
+You can use SlicePipe in *ngFor to display only a portion of a list.
+
+Template (HTML)
+
+<ul>
+  <li *ngFor="let fruit of fruits | slice:1:4">
+    {{ fruit }}
+  </li>
+</ul>
+Output
+Banana
+Cherry
+
+Date
+
+5. Dynamic Input from User
+Allow users to change slice indexes dynamically.
+
+Component (TypeScript)
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  fruits: string[] = ['Apple', 'Banana', 'Cherry', 'Date', 'Fig', 'Grape'];
+  startIndex: number = 0;
+  endIndex: number = this.fruits.length;
+}
+
+Template (HTML)
+
+<label>Start Index:</label>
+<input type="number" [(ngModel)]="startIndex">
+<br>
+
+<label>End Index:</label>
+<input type="number" [(ngModel)]="endIndex">
+<br>
+
+<h3>Sliced Fruits:</h3>
+<p>{{ fruits | slice:startIndex:endIndex }}</p>
+
+6. Conditional Usage in Template
+
+Template (HTML)
+
+<p *ngIf="(fruits | slice:0:3).length > 0">
+  First 3 fruits: {{ fruits | slice:0:3 }}
+</p>
+
+
+Understanding JsonPipe in Angular
+
+The JsonPipe in Angular is used to convert a JavaScript object into a JSON string. It is primarily used for debugging purposes, allowing developers to visualize the structure of objects in the UI.
+
+It is available in the CommonModule.
+It transforms an object into a formatted JSON string.
+It is used in templates with the | json syntax.
+1. Simple Example: Displaying a Basic Object
+In this example, we will display a simple object using the JsonPipe.
+
+Component File (app.component.ts)
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  user = {
+    name: 'John Doe',
+    age: 30,
+    country: 'USA'
+  };
+}
+Template File (app.component.html)
+<h3>Simple JSON Display</h3>
+<pre>{{ user | json }}</pre>
+
+Output
+
+{
+  "name": "John Doe",
+  "age": 30,
+  "country": "USA"
+}
+
+2. Example with Nested Object
+
+Now, let's use JsonPipe to format a nested object.
+
+Component File (app.component.ts)
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  employee = {
+    id: 101,
+    name: 'Alice',
+    department: 'IT',
+    address: {
+      city: 'New York',
+      zip: '10001'
+    }
+  };
+}
+
+Template File (app.component.html)
+
+<h3>Nested Object JSON Display</h3>
+<pre>{{ employee | json }}</pre>
+
+Output
+
+{
+  "id": 101,
+  "name": "Alice",
+  "department": "IT",
+  "address": {
+    "city": "New York",
+    "zip": "10001"
+  }
+}
+
+3. Example with an Array of Objects
+
+If you have an array of objects, JsonPipe can be used to display them in JSON format.
+
+Component File (app.component.ts)
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  students = [
+    { id: 1, name: 'John', marks: 85 },
+    { id: 2, name: 'Emma', marks: 90 },
+    { id: 3, name: 'Oliver', marks: 78 }
+  ];
+}
+
+Template File (app.component.html)
+
+<h3>Array of Objects JSON Display</h3>
+<pre>{{ students | json }}</pre>
+
+Output
+
+[
+  { "id": 1, "name": "John", "marks": 85 },
+  { "id": 2, "name": "Emma", "marks": 90 },
+  { "id": 3, "name": "Oliver", "marks": 78 }
+]
+
+4. Example Using JsonPipe with an API Call (Advanced)
+
+In real-world applications, data often comes from an API. Let’s see how JsonPipe works when fetching data asynchronously.
+
+Service File (data.service.ts)
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class DataService {
+  constructor(private http: HttpClient) {}
+
+  getUsers(): Observable<any> {
+    return this.http.get('https://jsonplaceholder.typicode.com/users');
+  }
+}
+
+Component File (app.component.ts)
+
+import { Component, OnInit } from '@angular/core';
+import { DataService } from './data.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent implements OnInit {
+  users: any;
+
+  constructor(private dataService: DataService) {}
+
+  ngOnInit() {
+    this.dataService.getUsers().subscribe(data => {
+      this.users = data;
+    });
+  }
+}
+
+Template File (app.component.html)
+
+<h3>API Response JSON Display</h3>
+<pre>{{ users | json }}</pre>
+
+Output (Example)
+
+[
+  {
+    "id": 1,
+    "name": "Leanne Graham",
+    "username": "Bret",
+    "email": "Sincere@april.biz",
+    "address": {
+      "street": "Kulas Light",
+      "city": "Gwenborough",
+      "zipcode": "92998-3874"
+    }
+  },
+  {
+    "id": 2,
+    "name": "Ervin Howell",
+    "username": "Antonette",
+    "email": "Shanna@melissa.tv"
+  }
+]
+
+5. Example with Custom Formatting
+
+Since JsonPipe does not provide custom formatting, we can create a method to prettify JSON output.
+
+Component File (app.component.ts)
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  data = {
+    title: 'Angular JSONPipe',
+    version: '17.0',
+    features: ['Directives', 'Services', 'Routing']
+  };
+
+  getFormattedJson() {
+    return JSON.stringify(this.data, null, 4); // Pretty print JSON
+  }
+}
+
+Template File (app.component.html)
+
+<h3>Custom JSON Formatting</h3>
+<pre>{{ getFormattedJson() }}</pre>
+
+Output
+
+{
+    "title": "Angular JSONPipe",
+    "version": "17.0",
+    "features": [
+        "Directives",
+        "Services",
+        "Routing"
+    ]
+}
+
+
+Understanding KeyValuePipe in Angular with Examples
+
+What is KeyValuePipe?
+
+KeyValuePipe in Angular is a built-in pipe that transforms an object or a map into an array of key-value pairs, making it easier to iterate over objects in templates.
+
+Why Use KeyValuePipe?
+
+Angular does not allow direct iteration over objects using *ngFor.
+KeyValuePipe converts objects/maps into iterable key-value pairs.
+It is useful when working with dynamic objects where keys are unknown beforehand.
+Basic Example: Iterating Over a Simple Object
+Let's start with a simple example where we have an object and we want to display its keys and values in the template.
+
+Component Code (key-value-example.component.ts)
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-key-value-example',
+  templateUrl: './key-value-example.component.html',
+})
+export class KeyValueExampleComponent {
+  user = {
+    name: 'John Doe',
+    age: 30,
+    country: 'USA'
+  };
+}
+
+Template Code (key-value-example.component.html)
+
+<h3>User Details</h3>
+<ul>
+  <li *ngFor="let item of user | keyvalue">
+    <strong>{{ item.key }}</strong>: {{ item.value }}
+  </li>
+</ul>
+
+Output:
+
+User Details
+- name: John Doe
+- age: 30
+- country: USA
+
+Example 2: Iterating Over a Map
+
+A Map is different from an object, as it maintains the insertion order.
+
+Component Code (key-value-map-example.component.ts)
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-key-value-map-example',
+  templateUrl: './key-value-map-example.component.html',
+})
+export class KeyValueMapExampleComponent {
+  employeeMap = new Map<string, string>([
+    ['id', 'E123'],
+    ['name', 'Alice'],
+    ['department', 'IT']
+  ]);
+}
+
+Template Code (key-value-map-example.component.html)
+
+<h3>Employee Details</h3>
+<ul>
+  <li *ngFor="let item of employeeMap | keyvalue">
+    <strong>{{ item.key }}</strong>: {{ item.value }}
+  </li>
+</ul>
+
+Output:
+
+Employee Details
+- id: E123
+- name: Alice
+- department: IT
+
+Example 3: Sorting Objects Using KeyValuePipe
+
+By default, KeyValuePipe sorts objects by key in ascending order. However, we can define a custom sorting function.
+
+Component Code (key-value-sort-example.component.ts)
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-key-value-sort-example',
+  templateUrl: './key-value-sort-example.component.html',
+})
+export class KeyValueSortExampleComponent {
+  product = {
+    id: 101,
+    price: 200,
+    name: 'Laptop'
+  };
+
+  // Custom sort function to sort by values
+  sortByValue(a: any, b: any): number {
+    return a.value > b.value ? 1 : -1;
+  }
+}
+Template Code (key-value-sort-example.component.html)
+
+<h3>Product Details (Sorted by Value)</h3>
+<ul>
+  <li *ngFor="let item of product | keyvalue: sortByValue">
+    <strong>{{ item.key }}</strong>: {{ item.value }}
+  </li>
+</ul>
+
+Output (Sorted by Value):
+
+Product Details (Sorted by Value)
+- id: 101
+- price: 200
+- name: Laptop
+
+Example 4: Sorting a Map by Custom Order
+
+We can also sort a Map based on custom logic.
+
+Component Code (key-value-map-sort-example.component.ts)
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-key-value-map-sort-example',
+  templateUrl: './key-value-map-sort-example.component.html',
+})
+export class KeyValueMapSortExampleComponent {
+  scores = new Map<string, number>([
+    ['Alice', 85],
+    ['Bob', 95],
+    ['Charlie', 75]
+  ]);
+
+  // Custom sorting function to sort by values (Descending)
+  sortByScore(a: any, b: any): number {
+    return b.value - a.value;
+  }
+}
+Template Code (key-value-map-sort-example.component.html)
+
+<h3>Student Scores (Sorted by Score in Descending Order)</h3>
+<ul>
+  <li *ngFor="let item of scores | keyvalue: sortByScore">
+    <strong>{{ item.key }}</strong>: {{ item.value }}
+  </li>
+</ul>
+
+Output (Sorted by Score Descending):
+
+Student Scores (Sorted by Score in Descending Order)
+- Bob: 95
+- Alice: 85
+- Charlie: 75
+Example 5: Using KeyValuePipe with Dynamic Objects
+You might have a dynamic object coming from an API, and you don't know its structure in advance.
+
+Component Code (dynamic-key-value.component.ts)
+
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-dynamic-key-value',
+  templateUrl: './dynamic-key-value.component.html',
+})
+export class DynamicKeyValueComponent implements OnInit {
+  apiData: any = {};
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit() {
+    this.http.get('https://jsonplaceholder.typicode.com/users/1').subscribe(data => {
+      this.apiData = data;
+    });
+  }
+}
+Template Code (dynamic-key-value.component.html)
+
+<h3>API Data</h3>
+<ul>
+  <li *ngFor="let item of apiData | keyvalue">
+    <strong>{{ item.key }}</strong>: {{ item.value }}
+  </li>
+</ul>
+
+Output (Example API Data from JSONPlaceholder)
+
+API Data
+- id: 1
+- name: Leanne Graham
+- username: Bret
+- email: Sincere@april.biz
+- address: [object Object]
+...
+(Note: Nested objects like address need further handling)

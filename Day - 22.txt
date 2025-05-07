@@ -1,0 +1,609 @@
+Routing Introduction :
+
+📌 Introduction to Angular Routing
+Routing in Angular enables navigation between different views or components within a Single Page Application (SPA). Instead of reloading the entire page, Angular dynamically updates the content based on the URL.
+
+📌 Step 1: Setting Up Routing in an Angular App
+1️⃣ Create a New Angular App
+Run the following command to create a new Angular project:
+
+ng new angular-routing-demo
+cd angular-routing-demo
+
+When prompted: ✔ Add Angular Routing → Select Yes
+
+✔ Choose CSS or any preferred styling option
+
+2️⃣ Create Components for Routing
+
+To demonstrate routing, create three components:
+
+ng generate component home
+ng generate component about
+ng generate component contact
+
+This will create:
+
+HomeComponent
+
+AboutComponent
+
+ContactComponent
+
+📌 Step 2: Configure the Routes
+Open app-routing.module.ts and define routes.
+
+📌 src/app/app-routing.module.ts
+
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { HomeComponent } from './home/home.component';
+import { AboutComponent } from './about/about.component';
+import { ContactComponent } from './contact/contact.component';
+
+const routes: Routes = [
+  { path: '', component: HomeComponent }, // Default Route
+  { path: 'about', component: AboutComponent },
+  { path: 'contact', component: ContactComponent },
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+✔ path: '' → Default (empty path) navigates to HomeComponent
+✔ path: 'about' → Navigates to AboutComponent
+✔ path: 'contact' → Navigates to ContactComponent
+
+📌 Step 3: Add Router Outlet & Navigation
+
+Modify app.component.html to include a router-outlet and navigation links.
+
+📌 src/app/app.component.html
+
+<nav>
+  <ul>
+    <li><a routerLink="/">Home</a></li>
+    <li><a routerLink="/about">About</a></li>
+    <li><a routerLink="/contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- This is where the routed component will be displayed -->
+<router-outlet></router-outlet>
+✔ routerLink → Defines navigation links
+✔ <router-outlet> → Acts as a placeholder for loading components dynamically
+
+📌 Step 4: Run & Test the App
+
+Now, run the application:
+
+ng serve -o
+🌟 Try navigating using the links or directly entering URLs like:
+
+http://localhost:4200/ → Home Component
+
+http://localhost:4200/about → About Component
+
+http://localhost:4200/contact → Contact Component
+
+📌 Advanced Routing Features
+
+Now, let's move from basic routing to advanced routing concepts.
+
+1️⃣ Route Parameters (Dynamic Routing)
+
+Sometimes, we need to pass dynamic parameters (e.g., user ID, product ID).
+
+📝 Example: Display User Details by ID
+
+Modify app-routing.module.ts:
+
+const routes: Routes = [
+  { path: 'user/:id', component: UserComponent },
+];
+Generate the UserComponent:
+
+ng generate component user
+📌 src/app/user/user.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+
+@Component({
+  selector: 'app-user',
+  templateUrl: './user.component.html',
+  styleUrls: ['./user.component.css']
+})
+export class UserComponent implements OnInit {
+  userId: string | null = '';
+
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit() {
+    this.userId = this.route.snapshot.paramMap.get('id');
+  }
+}
+📌 src/app/user/user.component.html
+
+<h2>User Details</h2>
+<p>User ID: {{ userId }}</p>
+
+🌟 Try navigating to: http://localhost:4200/user/123
+
+✔ It will display "User ID: 123" dynamically.
+
+2️⃣ Route Guards (Protecting Routes)
+
+Sometimes, we want to restrict access to certain pages (e.g., Admin Pages). We use Route Guards.
+
+📝 Example: Protect "Admin" Page
+Generate a guard:
+
+ng generate guard auth
+📌 src/app/auth.guard.ts
+
+import { Injectable } from '@angular/core';
+import { CanActivate, Router } from '@angular/router';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthGuard implements CanActivate {
+  constructor(private router: Router) {}
+
+  canActivate(): boolean {
+    const isAuthenticated = false; // Simulating authentication check
+    if (!isAuthenticated) {
+      this.router.navigate(['/']); // Redirect if not authenticated
+      return false;
+    }
+    return true;
+  }
+}
+
+Modify app-routing.module.ts to apply the guard:
+
+import { AuthGuard } from './auth.guard';
+import { AdminComponent } from './admin/admin.component';
+
+const routes: Routes = [
+  { path: 'admin', component: AdminComponent, canActivate: [AuthGuard] },
+];
+🌟 Now, if you try http://localhost:4200/admin, it will redirect you to Home if not authenticated.
+
+3️⃣ Lazy Loading (Optimizing Performance)
+
+By default, Angular loads all modules at once. Lazy Loading improves performance by loading modules only when needed.
+
+📝 Example: Lazy Load the Admin Module
+
+Generate an admin module:
+
+ng generate module admin --route admin --module app.module
+
+It will create admin.module.ts automatically.
+
+📌 src/app/admin/admin-routing.module.ts
+
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { AdminComponent } from './admin.component';
+
+const routes: Routes = [
+  { path: '', component: AdminComponent }
+];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class AdminRoutingModule { }
+
+📌 src/app/app-routing.module.ts (Modify for Lazy Loading)
+
+const routes: Routes = [
+  { path: 'admin', loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule) },
+];
+
+✔ Now, the Admin module will only load when visiting /admin, reducing the initial load time.
+
+📌 Summary of Routing Features
+
+Feature	Description
+Basic Routing	Navigate between components using routes
+Router Outlet	Placeholder for rendering components dynamically
+Route Parameters	Pass dynamic values in the URL (/user/:id)
+Route Guards	Protect routes from unauthorized access
+Lazy Loading	Load modules only when needed for performance
+
+
+Route Definition Object :
+
+
+In Angular, routing allows us to navigate between different views or components in a Single Page Application (SPA). The Route Definition Object is a configuration that defines which component should be rendered for a given URL.
+
+🔹 Basic Route Definition (Simple Example)
+In Angular, routes are defined as an array of Route objects. Each object maps a URL path to a component.
+
+1️⃣ Simple Route Configuration
+📌 Define routes in app-routing.module.ts:
+
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { HomeComponent } from './home/home.component';
+import { AboutComponent } from './about/about.component';
+
+const routes: Routes = [
+  { path: 'home', component: HomeComponent },
+  { path: 'about', component: AboutComponent }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)], // Import RouterModule with routes
+  exports: [RouterModule] // Export RouterModule for use in AppModule
+})
+export class AppRoutingModule { }
+📌 Use Router Outlet in app.component.html:
+
+<nav>
+  <a routerLink="/home">Home</a>
+  <a routerLink="/about">About</a>
+</nav>
+<router-outlet></router-outlet>
+
+✅ How It Works?
+
+path: 'home' → When users go to /home, HomeComponent is rendered.
+
+path: 'about' → When users go to /about, AboutComponent is rendered.
+
+<router-outlet> → Placeholder where the routed component appears.
+
+🔹 Handling Default & Wildcard Routes
+Sometimes, we need to define a default route (when the app loads) and a 404 page for unmatched URLs.
+
+📌 Modify app-routing.module.ts:
+
+const routes: Routes = [
+  { path: '', redirectTo: 'home', pathMatch: 'full' }, // Redirect to home by default
+  { path: 'home', component: HomeComponent },
+  { path: 'about', component: AboutComponent },
+  { path: '**', component: PageNotFoundComponent } // Wildcard route for 404
+];
+
+✅ How It Works?
+
+redirectTo: 'home', pathMatch: 'full' → Redirects empty URL (/) to /home.
+
+path: '**' → Matches any unknown route (404 page).
+
+🔹 Route with Parameters (Dynamic Routing)
+
+We can pass dynamic parameters in the URL.
+
+📌 Define Dynamic Route in app-routing.module.ts:
+
+const routes: Routes = [
+  { path: 'product/:id', component: ProductDetailComponent } // Dynamic parameter
+];
+📌 Read Route Parameter in product-detail.component.ts:
+
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+
+@Component({
+  selector: 'app-product-detail',
+  template: `<h2>Product ID: {{ productId }}</h2>`
+})
+export class ProductDetailComponent implements OnInit {
+  productId: string | null = '';
+
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit() {
+    this.productId = this.route.snapshot.paramMap.get('id'); // Get 'id' from URL
+  }
+}
+✅ Example URL:
+http://localhost:4200/product/101
+
+Output: "Product ID: 101"
+
+🔹 Child (Nested) Routes
+When we have sections within a component, we use child routes.
+
+📌 Define Nested Routes in app-routing.module.ts:
+
+const routes: Routes = [
+  {
+    path: 'dashboard', component: DashboardComponent,
+    children: [
+      { path: 'analytics', component: AnalyticsComponent },
+      { path: 'reports', component: ReportsComponent }
+    ]
+  }
+];
+📌 Use <router-outlet> Inside dashboard.component.html:
+
+<h2>Dashboard</h2>
+<a routerLink="analytics">Analytics</a>
+<a routerLink="reports">Reports</a>
+<router-outlet></router-outlet> <!-- Child component appears here -->
+✅ Example URLs:
+
+/dashboard/analytics → Loads AnalyticsComponent
+
+/dashboard/reports → Loads ReportsComponent
+
+🔹 Lazy Loading (Performance Optimization)
+Instead of loading everything upfront, we can load modules on demand.
+
+📌 Modify app-routing.module.ts to use loadChildren:
+
+const routes: Routes = [
+  { path: 'products', loadChildren: () => import('./products/products.module').then(m => m.ProductsModule) }
+];
+📌 Create products-routing.module.ts:
+
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { ProductListComponent } from './product-list/product-list.component';
+
+const routes: Routes = [{ path: '', component: ProductListComponent }];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+
+export class ProductsRoutingModule { }
+✅ How It Works?
+
+The products module is only loaded when users navigate to /products, improving performance.
+
+🔹 Route Guards (Protect Routes)
+Auth Guards prevent unauthorized users from accessing certain routes.
+
+📌 Create an Auth Guard (auth.guard.ts):
+
+import { Injectable } from '@angular/core';
+import { CanActivate, Router } from '@angular/router';
+
+@Injectable({ providedIn: 'root' })
+export class AuthGuard implements CanActivate {
+  constructor(private router: Router) {}
+
+  canActivate(): boolean {
+    const isAuthenticated = !!localStorage.getItem('token'); // Dummy authentication check
+    if (!isAuthenticated) {
+      this.router.navigate(['/login']); // Redirect to login if not authenticated
+      return false;
+    }
+    return true;
+  }
+}
+📌 Apply the Guard in app-routing.module.ts:
+
+const routes: Routes = [
+  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] }
+];
+✅ How It Works?
+
+If localStorage.getItem('token') exists, the user is authenticated.
+
+Otherwise, they are redirected to /login.
+
+🔹 Advanced Routing Example (Combining All Features)
+📌 Final app-routing.module.ts
+
+const routes: Routes = [
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  { path: 'home', component: HomeComponent },
+  { path: 'about', component: AboutComponent },
+  { path: 'product/:id', component: ProductDetailComponent },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard],
+    children: [
+      { path: 'analytics', component: AnalyticsComponent },
+      { path: 'reports', component: ReportsComponent }
+    ]
+  },
+  { path: 'products', loadChildren: () => import('./products/products.module').then(m => m.ProductsModule) },
+  { path: '**', component: PageNotFoundComponent } // Wildcard 404
+];
+📌 Summary of Route Definition Object
+
+Feature	Example
+Basic Routing	{ path: 'home', component: HomeComponent }
+Redirect Route	{ path: '', redirectTo: 'home', pathMatch: 'full' }
+Wildcard Route	{ path: '**', component: PageNotFoundComponent }
+Route Parameters	{ path: 'product/:id', component: ProductDetailComponent }
+Nested Routes	{ path: 'dashboard', children: [...] }
+Lazy Loading	{ path: 'products', loadChildren: ... }
+Auth Guard	{ path: 'dashboard', canActivate: [AuthGuard] }
+
+
+Router Outlets :
+
+
+🔹 What is a Router Outlet in Angular?
+In Angular, the <router-outlet> is a directive that acts as a placeholder to dynamically load different components based on the current route.
+
+Whenever the URL changes, Angular loads the appropriate component inside the <router-outlet>.
+
+🔹 Step 1: Setup an Angular Project
+Before we start, make sure you have Angular installed and create a new Angular project.
+
+ng new angular-router-outlet-demo
+cd angular-router-outlet-demo
+ng serve -o
+
+🔹 Step 2: Configure Basic Routing
+Angular routing is defined in the app-routing.module.ts file.
+
+📌 src/app/app-routing.module.ts
+
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { HomeComponent } from './home/home.component';
+import { AboutComponent } from './about/about.component';
+import { ContactComponent } from './contact/contact.component';
+
+const routes: Routes = [
+  { path: '', component: HomeComponent }, // Default route
+  { path: 'about', component: AboutComponent },
+  { path: 'contact', component: ContactComponent },
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+e
+xport class AppRoutingModule { }
+🔹 Step 3: Create Basic Components
+
+We will create three simple components: Home, About, and Contact.
+
+Run the following commands:
+
+ng generate component home
+ng generate component about
+ng generate component contact
+Each component will have a simple message:
+
+📌 src/app/home/home.component.html
+
+<h2>Welcome to the Home Page</h2>
+📌 src/app/about/about.component.html
+
+<h2>About Us</h2>
+📌 src/app/contact/contact.component.html
+
+<h2>Contact Us</h2>
+🔹 Step 4: Add Router Outlet in app.component.html
+Modify app.component.html to include navigation and a router-outlet.
+
+📌 src/app/app.component.html
+
+<nav>
+  <a routerLink="/">Home</a> | 
+  <a routerLink="/about">About</a> | 
+  <a routerLink="/contact">Contact</a>
+</nav>
+
+<hr>
+
+<router-outlet></router-outlet>
+✅ Now, based on the selected URL, the respective component will load inside the <router-outlet>.
+
+🔹 Advanced Router Outlet Examples
+Now, let’s explore advanced use cases of <router-outlet>.
+
+1️⃣ Nested Routing (Child Routes)
+Sometimes, we have a parent-child relationship between routes. For example, in a dashboard, we may have different sections.
+
+Step 1: Create Dashboard Components
+ng generate component dashboard
+ng generate component dashboard/profile
+ng generate component dashboard/settings
+Step 2: Define Child Routes in app-routing.module.ts
+📌 src/app/app-routing.module.ts
+
+const routes: Routes = [
+  { path: '', component: HomeComponent },
+  { path: 'about', component: AboutComponent },
+  { path: 'contact', component: ContactComponent },
+  {
+    path: 'dashboard',
+    component: DashboardComponent,
+    children: [
+      { path: 'profile', component: ProfileComponent },
+      { path: 'settings', component: SettingsComponent }
+    ]
+  }
+];
+Step 3: Add a Second Router Outlet in dashboard.component.html
+📌 src/app/dashboard/dashboard.component.html
+
+<h2>Dashboard</h2>
+<nav>
+  <a routerLink="profile">Profile</a> | 
+  <a routerLink="settings">Settings</a>
+</nav>
+
+<router-outlet></router-outlet>
+✅ Now, visiting /dashboard/profile will load the ProfileComponent inside the <router-outlet> inside DashboardComponent.
+
+2️⃣ Named Router Outlets (Multiple Outlets)
+By default, there is one <router-outlet>, but sometimes, we may need multiple router outlets in different places on a page.
+
+Step 1: Define Named Router Outlets
+Modify app.component.html to add multiple router outlets.
+
+📌 src/app/app.component.html
+
+<nav>
+  <a routerLink="/">Home</a> | 
+  <a routerLink="/about">About</a> | 
+  <a routerLink="/contact">Contact</a> | 
+  <a [routerLink]="[{ outlets: { primary: 'dashboard', sidebar: 'contact' } }]">Open Dashboard with Contact</a>
+</nav>
+
+<hr>
+
+<router-outlet name="primary"></router-outlet>
+<aside>
+  <h3>Sidebar Section</h3>
+  <router-outlet name="sidebar"></router-outlet>
+</aside>
+Step 2: Update Routes in app-routing.module.ts
+📌 src/app/app-routing.module.ts
+
+const routes: Routes = [
+  { path: '', component: HomeComponent, outlet: 'primary' },
+  { path: 'about', component: AboutComponent, outlet: 'primary' },
+  { path: 'contact', component: ContactComponent, outlet: 'sidebar' },
+  { path: 'dashboard', component: DashboardComponent, outlet: 'primary' }
+];
+✅ Now, when you click "Open Dashboard with Contact", it will load DashboardComponent in the main content and ContactComponent in the sidebar.
+
+3️⃣ Lazy Loading Modules
+For performance, we can lazy load modules using the router outlet.
+
+Step 1: Create a Feature Module
+ng generate module dashboard --route dashboard --module app.module
+ng generate component dashboard/main
+Step 2: Define Lazy Loaded Routes in app-routing.module.ts
+📌 src/app/app-routing.module.ts
+
+const routes: Routes = [
+  { path: '', component: HomeComponent },
+  { path: 'about', component: AboutComponent },
+  { path: 'contact', component: ContactComponent },
+  { path: 'dashboard', loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule) }
+];
+Step 3: Define Routes in dashboard-routing.module.ts
+📌 src/app/dashboard/dashboard-routing.module.ts
+
+const routes: Routes = [
+  { path: '', component: MainComponent }
+];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class DashboardRoutingModule { }
+✅ Now, Angular will lazy load the dashboard module only when needed, improving performance.
+
+🔹 Summary
+Feature	Description
+Basic Routing	Loads a component inside <router-outlet> based on the URL.
+Nested Routing	Loads child components inside a parent component's <router-outlet>.
+Named Router Outlets	Supports multiple <router-outlet> in different places.
+Lazy Loading	Loads modules only when needed to improve performance.
+
+
+

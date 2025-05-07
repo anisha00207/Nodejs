@@ -1,0 +1,1381 @@
+Working with various Decorators in DI :
+
+Decorators are special types of declarations in TypeScript that attach metadata to classes, methods, properties, or parameters.
+In Angular Dependency Injection (DI), decorators help define how dependencies are provided, injected, and managed.
+
+1. Types of Decorators in Angular DI
+
+Decorator	Purpose
+
+@Injectable()	Defines a service and allows Angular to inject it.
+@Inject()	Allows explicit injection of a dependency.
+@Optional()	Marks a dependency as optional.
+@Self()	Retrieves only the dependency from the current injector.
+@SkipSelf()	Retrieves the dependency from a parent injector.
+@Host()	Retrieves the dependency from the host component.
+Let's go through each decorator step by step, starting from simple to advanced. 🚀
+
+2. Basic Dependency Injection using @Injectable()
+🔹 @Injectable() – Defining and Injecting Services
+@Injectable() is used to define a service and make it available for dependency injection.
+
+Example: Creating a Simple Logging Service
+
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root', // Service is available throughout the app
+})
+export class LoggerService {
+  log(message: string) {
+    console.log('LoggerService:', message);
+  }
+}
+Using the Service in a Component
+
+import { Component } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-home',
+  template: `<h1>Home Component</h1>`,
+})
+export class HomeComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.log('Home Component Loaded!');
+  }
+}
+✅ Outcome: LoggerService is automatically injected into HomeComponent.
+
+3. Explicit Injection using @Inject()
+Sometimes, we need to inject dependencies explicitly when using custom tokens or interfaces.
+
+Example: Injecting a String Token
+
+import { Injectable, InjectionToken, Inject } from '@angular/core';
+
+export const API_URL = new InjectionToken<string>('api_url');
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ApiService {
+  constructor(@Inject(API_URL) private apiUrl: string) {}
+
+  getData() {
+    console.log('API URL:', this.apiUrl);
+  }
+}
+
+Providing the Token in app.module.ts
+
+import { NgModule } from '@angular/core';
+import { API_URL } from './api.service';
+
+@NgModule({
+  providers: [{ provide: API_URL, useValue: 'https://myapi.com' }],
+})
+export class AppModule {}
+
+✅ Outcome: The ApiService will receive 'https://myapi.com' as apiUrl.
+
+4. Making Dependencies Optional using @Optional()
+
+If a dependency might not be available, we use @Optional() to avoid runtime errors.
+
+Example: Creating an Optional Service
+
+import { Injectable } from '@angular/core';
+
+@Injectable()
+export class AuthService {
+  isAuthenticated() {
+    return true;
+  }
+}
+Injecting the Service Optionally
+
+import { Component, Optional } from '@angular/core';
+import { AuthService } from './auth.service';
+
+@Component({
+  selector: 'app-dashboard',
+  template: `<h1>Dashboard</h1>`,
+})
+export class DashboardComponent {
+  constructor(@Optional() private authService: AuthService) {
+    if (this.authService) {
+      console.log('User is authenticated:', this.authService.isAuthenticated());
+    } else {
+      console.log('AuthService is not available');
+    }
+  }
+}
+✅ Outcome: If AuthService is provided, it will be used; otherwise, no error will occur.
+
+5. Controlling Injector Behavior with @Self()
+The @Self() decorator forces Angular to use the dependency from the current component’s injector only.
+
+Example: Using @Self() to Restrict Dependency Scope
+
+import { Component, Self } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-profile',
+  template: `<h1>Profile Component</h1>`,
+  providers: [LoggerService], // Providing service at the component level
+})
+export class ProfileComponent {
+  constructor(@Self() private logger: LoggerService) {
+    this.logger.log('Profile Component Loaded');
+  }
+}
+✅ Outcome: LoggerService is only injected if provided at the component level.
+
+6. Skipping Local Injector with @SkipSelf()
+
+@SkipSelf() tells Angular not to use the current injector and instead look for the dependency in parent injectors.
+
+Example: Skipping the Local Injector
+
+import { Component, SkipSelf } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-settings',
+  template: `<h1>Settings Component</h1>`,
+  providers: [LoggerService], // Local provider
+})
+export class SettingsComponent {
+  constructor(@SkipSelf() private logger: LoggerService) {
+    this.logger.log('Settings Component Loaded');
+  }
+}
+✅ Outcome: If LoggerService is not available in parent components, Angular throws an error.
+
+7. Getting Dependencies from Host Component using @Host()
+The @Host() decorator forces Angular to only fetch dependencies from the host component’s injector.
+
+Example: Using @Host() in Child Component
+
+import { Component, Host } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-child',
+  template: `<h1>Child Component</h1>`,
+})
+export class ChildComponent {
+  constructor(@Host() private logger: LoggerService) {
+    this.logger.log('Child Component Loaded');
+  }
+}
+
+Host Component (Parent)
+
+@Component({
+  selector: 'app-parent',
+  template: `<app-child></app-child>`,
+  providers: [LoggerService], // Service provided in the parent
+})
+export class ParentComponent {}
+✅ Outcome: ChildComponent will receive LoggerService only if ParentComponent provides it.
+
+8. Advanced DI Example: Combining Multiple Decorators
+
+Let's create an advanced example where:
+
+ApiService uses @Inject()
+AuthService is optional with @Optional()
+LoggerService is forced from the host component with @Host()
+ConfigService skips local injector using @SkipSelf()
+
+import { Injectable, Inject, Optional, SkipSelf, Host } from '@angular/core';
+
+@Injectable({ providedIn: 'root' })
+export class ConfigService {
+  constructor() {
+    console.log('ConfigService Initialized');
+  }
+}
+
+@Injectable()
+export class ApiService {
+  constructor(@Inject('API_URL') private apiUrl: string) {
+    console.log('API URL:', this.apiUrl);
+  }
+}
+
+@Injectable()
+export class AuthService {
+  isAuthenticated() {
+    return true;
+  }
+}
+
+@Injectable()
+export class LoggerService {
+  log(message: string) {
+    console.log('Logger:', message);
+  }
+}
+
+Component Using Multiple DI Decorators
+
+@Component({
+  selector: 'app-dashboard',
+  template: `<h1>Dashboard</h1>`,
+  providers: [LoggerService, { provide: 'API_URL', useValue: 'https://api.example.com' }],
+})
+export class DashboardComponent {
+  constructor(
+    @Inject('API_URL') private apiUrl: string,
+    @Optional() private authService: AuthService,
+    @SkipSelf() private configService: ConfigService,
+    @Host() private logger: LoggerService
+  ) {
+    console.log('API URL:', this.apiUrl);
+    if (this.authService) {
+      console.log('User Authenticated:', this.authService.isAuthenticated());
+    }
+    this.logger.log('Dashboard Component Loaded');
+  }
+}
+✅ Outcome: Dependencies are managed efficiently using different DI decorators.
+
+
+@Injector() :
+
+
+1. What is @Inject() in Angular?
+
+The @Inject() decorator in Angular is used to manually specify a dependency when Angular's default dependency injection mechanism cannot determine it automatically.
+
+💡 Normally, Angular infers dependencies from the constructor. However, in some cases, such as injecting tokens, Angular needs explicit instructions—this is where @Inject() comes in.
+
+2. Basic Example of @Inject()
+
+Scenario: Injecting a Service Normally vs. Using @Inject()
+✅ Without @Inject() (Normal Injection)
+Angular automatically resolves dependencies in the constructor:
+
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class LoggerService {
+  logMessage(msg: string) {
+    console.log(msg);
+  }
+}
+Now, inject it into a component:
+
+import { Component } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-home',
+  template: `<h1>Home Component</h1>`,
+})
+export class HomeComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.logMessage('Home Component Loaded!');
+  }
+}
+✅ Works fine because Angular can detect the LoggerService.
+
+✅ Using @Inject()
+
+Let's inject the LoggerService explicitly:
+
+import { Inject, Component } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-home',
+  template: `<h1>Home Component</h1>`,
+})
+export class HomeComponent {
+  constructor(@Inject(LoggerService) private logger: LoggerService) {
+    this.logger.logMessage('Home Component Loaded!');
+  }
+}
+✅ The @Inject() decorator explicitly tells Angular to inject the LoggerService.
+
+3. Using @Inject() with Custom Tokens (InjectionToken)
+
+Sometimes, we want to inject values or configuration settings instead of a service.
+
+✅ Example: Injecting a Configurable Value
+Let's say we have an API base URL that needs to be injected.
+
+Step 1: Create an Injection Token
+
+import { InjectionToken } from '@angular/core';
+
+// Creating an Injection Token
+export const API_URL = new InjectionToken<string>('API_URL');
+
+Step 2: Provide the Value in app.module.ts
+
+import { NgModule } from '@angular/core';
+import { API_URL } from './api.token';
+
+@NgModule({
+  providers: [{ provide: API_URL, useValue: 'https://api.example.com' }],
+})
+export class AppModule {}
+
+Step 3: Inject the Token in a Service
+
+import { Inject, Injectable } from '@angular/core';
+import { API_URL } from './api.token';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ApiService {
+  constructor(@Inject(API_URL) private apiUrl: string) {}
+
+  getApiUrl() {
+    console.log('API URL:', this.apiUrl);
+  }
+}
+✅ @Inject(API_URL) ensures that Angular injects the string value ('https://api.example.com').
+
+4. Using @Inject() with useClass Provider
+
+Scenario: Suppose we want to provide different implementations of a service.
+
+Step 1: Create the Base Interface
+
+export abstract class NotificationService {
+  abstract sendMessage(msg: string): void;
+}
+
+Step 2: Create Two Implementations
+✅ Email Notification Service
+
+import { Injectable } from '@angular/core';
+import { NotificationService } from './notification.service';
+
+@Injectable()
+export class EmailNotificationService implements NotificationService {
+  sendMessage(msg: string): void {
+    console.log('Email sent:', msg);
+  }
+}
+✅ SMS Notification Service
+
+import { Injectable } from '@angular/core';
+import { NotificationService } from './notification.service';
+
+@Injectable()
+export class SmsNotificationService implements NotificationService {
+  sendMessage(msg: string): void {
+    console.log('SMS sent:', msg);
+  }
+}
+Step 3: Provide a Specific Implementation in app.module.ts
+
+import { NgModule } from '@angular/core';
+import { NotificationService } from './notification.service';
+import { EmailNotificationService } from './email-notification.service';
+
+@NgModule({
+  providers: [{ provide: NotificationService, useClass: EmailNotificationService }],
+})
+export class AppModule {}
+
+Step 4: Inject and Use It
+
+import { Component, Inject } from '@angular/core';
+import { NotificationService } from './notification.service';
+
+@Component({
+  selector: 'app-home',
+  template: `<h1>Home Component</h1>`,
+})
+export class HomeComponent {
+  constructor(@Inject(NotificationService) private notifier: NotificationService) {
+    this.notifier.sendMessage('Hello from HomeComponent!');
+  }
+}
+✅ This will inject EmailNotificationService as NotificationService.
+
+🔹 Changing Implementation?
+If you change useClass: SmsNotificationService, the app will start using SMS notifications instead of email.
+
+5. Using @Inject() with useFactory for Dynamic Values
+
+Scenario: We want to inject a value computed dynamically instead of a fixed one.
+
+Step 1: Create a Factory Function
+export function apiUrlFactory(): string {
+  return window.location.hostname.includes('localhost')
+    ? 'https://dev.api.example.com'
+    : 'https://prod.api.example.com';
+}
+Step 2: Register It in app.module.ts
+
+import { NgModule } from '@angular/core';
+import { API_URL } from './api.token';
+
+@NgModule({
+  providers: [{ provide: API_URL, useFactory: apiUrlFactory }],
+})
+export class AppModule {}
+
+Step 3: Inject and Use It
+
+import { Inject, Injectable } from '@angular/core';
+import { API_URL } from './api.token';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ApiService {
+  constructor(@Inject(API_URL) private apiUrl: string) {}
+
+  getApiUrl() {
+    console.log('API URL:', this.apiUrl);
+  }
+}
+✅ Dynamically injects API URL based on whether the app is running in local or production.
+
+6. Using @Inject() with Multi-Providers
+
+Scenario: Suppose we want to register multiple implementations of the same service.
+
+Step 1: Create an Injection Token
+
+import { InjectionToken } from '@angular/core';
+
+export const NOTIFICATION_PROVIDERS = new InjectionToken<string[]>('NOTIFICATION_PROVIDERS');
+
+Step 2: Provide Multiple Values in app.module.ts
+
+import { NgModule } from '@angular/core';
+import { NOTIFICATION_PROVIDERS } from './notification.token';
+
+@NgModule({
+  providers: [
+    { provide: NOTIFICATION_PROVIDERS, useValue: 'Email', multi: true },
+    { provide: NOTIFICATION_PROVIDERS, useValue: 'SMS', multi: true },
+  ],
+})
+export class AppModule {}
+
+Step 3: Inject and Use It
+
+import { Inject, Component } from '@angular/core';
+import { NOTIFICATION_PROVIDERS } from './notification.token';
+
+@Component({
+  selector: 'app-home',
+  template: `<h1>Home Component</h1>`,
+})
+export class HomeComponent {
+  constructor(@Inject(NOTIFICATION_PROVIDERS) private notificationTypes: string[]) {
+    console.log('Notification Methods:', this.notificationTypes);
+  }
+}
+✅ This will print:
+
+Notification Methods: ['Email', 'SMS']
+🔹 Using multi: true allows injecting multiple values.
+
+
+@Injectable() :
+
+
+The @Injectable() decorator in Angular marks a class as available for Dependency Injection (DI). It tells Angular that this class can be instantiated and injected as a dependency into other components or services.
+
+1️⃣ Simple Example: Using @Injectable() with providedIn: 'root'
+In basic cases, we create a service and inject it into a component.
+
+Step 1: Create a Simple Service
+
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root', // Service is available application-wide
+})
+export class LoggerService {
+  logMessage(message: string) {
+    console.log('Log:', message);
+  }
+}
+Step 2: Inject the Service into a Component
+
+import { Component } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-home',
+  template: `<h1>Home Component</h1>`,
+})
+export class HomeComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.logMessage('HomeComponent Loaded!'); // Using the service
+  }
+}
+🟢 Key Takeaway:
+
+The LoggerService is automatically registered as a singleton.
+No need to manually add it to the providers array in app.module.ts.
+
+2️⃣ Using @Injectable() with providedIn: 'any'
+🔹 providedIn: 'any' creates a new instance of the service for every lazy-loaded module.
+
+@Injectable({
+  providedIn: 'any', // New instance per lazy-loaded module
+})
+export class UserService {
+  getUser() {
+    return { name: 'Alice', age: 25 };
+  }
+}
+✔️ Use case: If a service is used across multiple modules and each module should have a separate instance.
+
+3️⃣ Using @Injectable() with providedIn: 'platform'
+
+🔹 providedIn: 'platform' creates a singleton service shared across multiple applications running on the same platform.
+
+@Injectable({
+  providedIn: 'platform', // Shared service across Angular applications
+})
+export class PlatformService {
+  getPlatform() {
+    return 'This service is available across the platform!';
+  }
+}
+✔️ Use case: Useful for multi-app setups where you want a shared service across different Angular applications.
+
+4️⃣ Manually Providing a Service in a Module
+
+Instead of providedIn: 'root', we can manually declare the service in the providers array.
+
+import { NgModule } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@NgModule({
+  providers: [LoggerService], // Registering service manually
+})
+export class AppModule {}
+✔️ Use case: When you don’t want the service available across the entire application.
+
+5️⃣ Providing a Service at the Component Level
+A service can be scoped to a specific component by using providers inside @Component().
+
+import { Component } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-child',
+  template: `<h2>Child Component</h2>`,
+  providers: [LoggerService], // This creates a new instance of LoggerService
+})
+export class ChildComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.logMessage('Child Component Loaded!');
+  }
+}
+✔️ Use case: If you want each instance of ChildComponent to have a new instance of LoggerService.
+
+6️⃣ Injecting a Service into Another Service
+🔹 A service can inject another service inside it using @Injectable().
+
+Step 1: Create LoggerService
+
+@Injectable({
+  providedIn: 'root',
+})
+export class LoggerService {
+  logMessage(message: string) {
+    console.log('Log:', message);
+  }
+}
+Step 2: Create UserService and Inject LoggerService
+
+@Injectable({
+  providedIn: 'root',
+})
+export class UserService {
+  constructor(private logger: LoggerService) {}
+
+  getUser() {
+    this.logger.logMessage('Fetching user data...');
+    return { name: 'John Doe', age: 30 };
+  }
+}
+✔️ Use case: Allows services to share functionalities while keeping them separate.
+
+7️⃣ Using @Inject() to Inject a Service
+Angular’s DI system automatically resolves dependencies. But we can also explicitly inject services using the @Inject() decorator.
+
+import { Injectable, Inject } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AuthService {
+  constructor(@Inject(LoggerService) private logger: LoggerService) {
+    this.logger.logMessage('AuthService Initialized');
+  }
+}
+✔️ Use case: Useful when injecting tokens, configurations, or alternative implementations.
+
+8️⃣ Using useClass for Alternative Implementations
+We can replace a service implementation dynamically.
+
+@Injectable()
+export class MockLoggerService {
+  logMessage(message: string) {
+    console.log('Mock Log:', message);
+  }
+}
+🔹 Provide an alternative class in providers
+
+@NgModule({
+  providers: [{ provide: LoggerService, useClass: MockLoggerService }],
+})
+export class AppModule {}
+✔️ Use case: Useful for unit testing.
+
+9️⃣ Using useValue to Provide a Constant
+We can inject a static value instead of a class.
+
+const API_URL = 'https://api.example.com';
+
+@NgModule({
+  providers: [{ provide: 'API_URL', useValue: API_URL }],
+})
+
+export class AppModule {}
+🔹 Injecting the value into a service
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ApiService {
+  constructor(@Inject('API_URL') private apiUrl: string) {
+    console.log('API URL:', this.apiUrl);
+  }
+}
+✔️ Use case: Useful for configuration values.
+
+🔟 Using useFactory for Dynamic Service Creation
+We can use a factory function to determine how a service is created dynamically.
+
+🔹 Factory function
+
+export function loggerFactory() {
+  return new LoggerService();
+}
+🔹 Providing the factory
+
+@NgModule({
+  providers: [{ provide: LoggerService, useFactory: loggerFactory }],
+})
+export class AppModule {}
+✔️ Use case: Useful when creating configurable services.
+
+
+
+Building Template Forms and Reactive Forms :
+
+
+Angular provides two types of forms:
+1️⃣ Template-Driven Forms – Suitable for simple use cases, uses FormsModule.
+2️⃣ Reactive Forms – Suitable for complex use cases, uses ReactiveFormsModule.
+
+1️⃣ Template-Driven Forms (Simple & Declarative)
+Uses ngModel for two-way data binding.
+Works well for simple forms.
+Requires FormsModule in app.module.ts.
+Less control over validation and form state.
+📌 Example 1: Basic Template-Driven Form (Simple Registration Form)
+Step 1: Import FormsModule in app.module.ts
+
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
+import { AppComponent } from './app.component';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule, FormsModule], // Import FormsModule
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+
+
+Step 2: Create a Simple Form in app.component.html
+
+<form #userForm="ngForm" (ngSubmit)="onSubmit(userForm)">
+  <label>Name:</label>
+  <input type="text" name="name" ngModel required />
+  
+  <label>Email:</label>
+  <input type="email" name="email" ngModel required />
+
+  <button type="submit" [disabled]="userForm.invalid">Submit</button>
+</form>
+
+<p *ngIf="submitted">Form Submitted! Name: {{ userData.name }}, Email: {{ userData.email }}</p>
+
+
+Step 3: Handle Form Submission in app.component.ts
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+})
+export class AppComponent {
+  submitted = false;
+  userData = { name: '', email: '' };
+
+  onSubmit(form: any) {
+    this.submitted = true;
+    this.userData = form.value;
+    console.log('Form Data:', this.userData);
+  }
+}
+
+
+✅ Features in Template-Driven Forms
+
+✔ Uses ngModel for binding.
+✔ Uses #formReference for validation.
+✔ Simple but limited for advanced use cases.
+
+
+2️⃣ Reactive Forms (Powerful & Scalable)
+
+Uses FormControl, FormGroup, FormBuilder.
+Works well for complex forms.
+Requires ReactiveFormsModule.
+Full control over validation, state, and dynamic changes.
+
+📌 Example 2: Basic Reactive Form
+
+Step 1: Import ReactiveFormsModule in app.module.ts
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { ReactiveFormsModule } from '@angular/forms';
+import { AppComponent } from './app.component';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule, ReactiveFormsModule], // Import ReactiveFormsModule
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+
+
+Step 2: Define Form in app.component.ts
+
+import { Component } from '@angular/core';
+import { FormGroup, FormControl } from '@angular/forms';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+})
+export class AppComponent {
+  userForm = new FormGroup({
+    name: new FormControl(''),
+    email: new FormControl(''),
+  });
+
+  onSubmit() {
+    console.log('Form Data:', this.userForm.value);
+  }
+}
+
+
+Step 3: Create the Form in app.component.html
+
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+  <label>Name:</label>
+  <input type="text" formControlName="name" />
+
+  <label>Email:</label>
+  <input type="email" formControlName="email" />
+
+  <button type="submit">Submit</button>
+</form>
+
+<p>Form Data: {{ userForm.value | json }}</p>
+
+✅ Features of Reactive Forms
+✔ Uses FormGroup and FormControl.
+✔ More structured & scalable.
+✔ Suitable for complex & dynamic forms.
+
+📌 Example 3: Reactive Form with Validation
+
+import { Component } from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+})
+export class AppComponent {
+  userForm = new FormGroup({
+    name: new FormControl('', [Validators.required, Validators.minLength(3)]),
+    email: new FormControl('', [Validators.required, Validators.email]),
+  });
+
+  get name() {
+    return this.userForm.get('name');
+  }
+
+  get email() {
+    return this.userForm.get('email');
+  }
+
+  onSubmit() {
+    console.log('Form Data:', this.userForm.value);
+  }
+}
+
+Step 3: Add Form Validation in app.component.html
+
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+  <label>Name:</label>
+  <input type="text" formControlName="name" />
+  <small *ngIf="name?.invalid && name?.touched">Name is required (min 3 characters)</small>
+
+  <label>Email:</label>
+  <input type="email" formControlName="email" />
+  <small *ngIf="email?.invalid && email?.touched">Enter a valid email</small>
+
+  <button type="submit" [disabled]="userForm.invalid">Submit</button>
+</form>
+✅ Advanced Features
+✔ Supports Validators like required, email, minLength.
+✔ Uses getters (this.userForm.get('name')) for validation.
+✔ Shows error messages dynamically.
+
+📌 Example 4: Reactive Form with FormBuilder (Easier Setup)
+
+Instead of manually creating new FormGroup(), we use FormBuilder.
+
+Step 1: Import FormBuilder
+
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+})
+export class AppComponent {
+  userForm: FormGroup;
+
+  constructor(private fb: FormBuilder) {
+    this.userForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      email: ['', [Validators.required, Validators.email]],
+    });
+  }
+
+  onSubmit() {
+    console.log('Form Data:', this.userForm.value);
+  }
+}
+
+📌 Example 5: Dynamic Form with FormArray
+
+For dynamic forms (e.g., adding multiple addresses), use FormArray.
+
+Step 1: Define Form in app.component.ts
+
+import { Component } from '@angular/core';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+})
+export class AppComponent {
+  userForm: FormGroup;
+
+  constructor(private fb: FormBuilder) {
+    this.userForm = this.fb.group({
+      name: ['', Validators.required],
+      addresses: this.fb.array([]),
+    });
+  }
+
+  get addresses() {
+    return this.userForm.get('addresses') as FormArray;
+  }
+
+  addAddress() {
+    this.addresses.push(this.fb.control(''));
+  }
+
+  onSubmit() {
+    console.log(this.userForm.value);
+  }
+}
+
+Step 2: Dynamic UI in app.component.html
+
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+  <input type="text" formControlName="name" placeholder="Name" />
+
+  <div formArrayName="addresses">
+    <div *ngFor="let address of addresses.controls; let i = index">
+      <input type="text" [formControlName]="i" placeholder="Address {{ i + 1 }}" />
+    </div>
+  </div>
+
+  <button type="button" (click)="addAddress()">Add Address</button>
+  <button type="submit">Submit</button>
+</form>
+
+🚀 Summary
+
+Feature	Template-Driven Forms	Reactive Forms
+Uses	ngModel	FormControl, FormGroup
+Best For	Simple forms	Complex & dynamic forms
+Validation	Less control	Full control
+Performance	Slower	Faster
+
+
+Understanding FormBuilder, FormGroup, FormControl classes :
+
+
+Angular provides the Reactive Forms module for handling form inputs, validation, and dynamic form creation. Three key classes play a crucial role in Reactive Forms:
+
+FormControl → Manages an individual form field.
+FormGroup → Manages a group of form controls (i.e., a form).
+FormBuilder → A helper class to simplify form creation using FormGroup and FormControl.
+
+1. Setting Up Reactive Forms in Angular
+Before using FormControl, FormGroup, and FormBuilder, we must import the ReactiveFormsModule in 
+
+app.module.ts.
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { ReactiveFormsModule } from '@angular/forms';
+import { AppComponent } from './app.component';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule, ReactiveFormsModule], // Import ReactiveFormsModule
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+2. Understanding FormControl (Handling Individual Fields)
+
+FormControl is used to handle an individual form field.
+
+Example: Creating a Single Input Field
+
+import { Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <label for="username">Username:</label>
+    <input id="username" type="text" [formControl]="username">
+    <p>Entered Username: {{ username.value }}</p>
+  `
+})
+export class AppComponent {
+  username = new FormControl('');
+}
+
+Explanation:
+new FormControl('') → Initializes the form control with an empty string.
+[formControl]="username" → Binds the input field to the username FormControl.
+username.value → Fetches the current value of the input.
+
+3. Understanding FormGroup (Grouping Multiple Fields)
+
+A FormGroup is used to manage multiple FormControl elements.
+
+Example: Creating a Simple Login Form
+
+import { Component } from '@angular/core';
+import { FormGroup, FormControl } from '@angular/forms';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <label for="email">Email:</label>
+      <input id="email" type="email" formControlName="email">
+      
+      <label for="password">Password:</label>
+      <input id="password" type="password" formControlName="password">
+      
+      <button type="submit">Login</button>
+    </form>
+    
+    <p>Form Value: {{ loginForm.value | json }}</p>
+  `
+})
+export class AppComponent {
+  loginForm = new FormGroup({
+    email: new FormControl(''),
+    password: new FormControl('')
+  });
+
+  onSubmit() {
+    console.log(this.loginForm.value);
+  }
+}
+
+Explanation:
+
+FormGroup groups multiple FormControl elements.
+formControlName="email" and formControlName="password" bind the input fields to FormGroup.
+loginForm.value returns an object { email: '...', password: '...' }.
+
+4. Understanding FormBuilder (Simplifying Form Creation)
+
+FormBuilder is a helper service that reduces boilerplate code when creating forms.
+
+Example: Creating a Login Form with FormBuilder
+
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <label for="email">Email:</label>
+      <input id="email" type="email" formControlName="email">
+      
+      <label for="password">Password:</label>
+      <input id="password" type="password" formControlName="password">
+      
+      <button type="submit">Login</button>
+    </form>
+  `
+})
+export class AppComponent {
+  loginForm: FormGroup;
+
+  constructor(private fb: FormBuilder) {
+    this.loginForm = this.fb.group({
+      email: [''],
+      password: ['']
+    });
+  }
+
+  onSubmit() {
+    console.log(this.loginForm.value);
+  }
+}
+Advantages of FormBuilder:
+✅ Reduces code complexity.
+✅ Provides a cleaner syntax.
+✅ Easily extendable for complex forms.
+
+5. Adding Form Validations
+Angular provides built-in validators like Validators.required, Validators.email, etc.
+
+Example: Form Validation with FormBuilder
+
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <label for="name">Name:</label>
+      <input id="name" type="text" formControlName="name">
+      <p *ngIf="registerForm.controls.name.invalid && registerForm.controls.name.touched">
+        Name is required.
+      </p>
+
+      <label for="email">Email:</label>
+      <input id="email" type="email" formControlName="email">
+      <p *ngIf="registerForm.controls.email.invalid && registerForm.controls.email.touched">
+        Enter a valid email.
+      </p>
+
+      <button type="submit" [disabled]="registerForm.invalid">Register</button>
+    </form>
+  `
+})
+export class AppComponent {
+  registerForm: FormGroup;
+
+  constructor(private fb: FormBuilder) {
+    this.registerForm = this.fb.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]]
+    });
+  }
+
+  onSubmit() {
+    console.log(this.registerForm.value);
+  }
+}
+
+6. Working with Dynamic Forms
+
+Sometimes, the form fields are not predefined and must be added dynamically.
+
+Example: Adding Dynamic Form Fields
+
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <form [formGroup]="skillsForm">
+      <label>Skills:</label>
+      <div formArrayName="skills">
+        <div *ngFor="let skill of skills.controls; let i = index">
+          <input [formControlName]="i">
+          <button (click)="removeSkill(i)">Remove</button>
+        </div>
+      </div>
+      <button (click)="addSkill()">Add Skill</button>
+    </form>
+  `
+})
+export class AppComponent {
+  skillsForm: FormGroup;
+
+  constructor(private fb: FormBuilder) {
+    this.skillsForm = this.fb.group({
+      skills: this.fb.array([])
+    });
+  }
+
+  get skills() {
+    return this.skillsForm.get('skills') as FormArray;
+  }
+
+  addSkill() {
+    this.skills.push(this.fb.control(''));
+  }
+
+  removeSkill(index: number) {
+    this.skills.removeAt(index);
+  }
+}
+
+Key Concepts:
+✅ FormArray allows managing a dynamic list of form controls.
+✅ skillsForm.get('skills') as FormArray → Retrieves the FormArray from FormGroup.
+✅ addSkill() → Dynamically adds a new field.
+✅ removeSkill(index) → Removes a field dynamically.
+
+
+Validating Forms :
+
+
+Form validation in Angular is crucial for ensuring data integrity and providing a good user experience. Angular offers Template-driven Forms and Reactive Forms with built-in and custom validation techniques.
+
+1. Types of Forms in Angular
+Angular provides two types of forms:
+
+Template-driven Forms (Uses FormsModule → Simple, suitable for small applications)
+Reactive Forms (Uses ReactiveFormsModule → More flexible, suitable for complex applications)
+🚀 Simple Validation with Template-Driven Forms
+🔹 Step 1: Import FormsModule in app.module.ts
+
+import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+@NgModule({
+  imports: [FormsModule],
+})
+export class AppModule {}
+🔹 Step 2: Create a Basic Form in app.component.html
+
+<form #userForm="ngForm" (ngSubmit)="onSubmit(userForm)">
+  <label for="name">Name:</label>
+  <input type="text" id="name" name="name" ngModel required minlength="3">
+  <div *ngIf="userForm.controls.name?.invalid && userForm.controls.name?.touched">
+    <small *ngIf="userForm.controls.name?.errors?.required">Name is required.</small>
+    <small *ngIf="userForm.controls.name?.errors?.minlength">Minimum 3 characters.</small>
+  </div>
+
+  <button type="submit" [disabled]="userForm.invalid">Submit</button>
+</form>
+
+🔹 Step 3: Handle Form Submission in app.component.ts
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+})
+export class AppComponent {
+  onSubmit(form: any) {
+    console.log('Form Submitted:', form.value);
+  }
+}
+
+✅ Features: Required field validation, min-length validation.
+❌ Limitation: Difficult to manage dynamic validations.
+
+🚀 Advanced Validation with Reactive Forms
+
+🔹 Step 1: Import ReactiveFormsModule in app.module.ts
+
+import { ReactiveFormsModule } from '@angular/forms';
+
+@NgModule({
+  imports: [ReactiveFormsModule],
+})
+export class AppModule {}
+
+🔹 Step 2: Create a Reactive Form in app.component.ts
+
+import { Component } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+})
+export class AppComponent {
+  userForm = new FormGroup({
+    name: new FormControl('', [Validators.required, Validators.minLength(3)]),
+    email: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', [
+      Validators.required,
+      Validators.minLength(6),
+      Validators.pattern('^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,}$'), // At least one letter and one number
+    ]),
+  });
+
+  onSubmit() {
+    console.log('Form Data:', this.userForm.value);
+  }
+}
+
+🔹 Step 3: Create the Form UI in app.component.html
+
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+  <label for="name">Name:</label>
+  <input id="name" formControlName="name">
+  <div *ngIf="userForm.controls.name.invalid && userForm.controls.name.touched">
+    <small *ngIf="userForm.controls.name.errors?.required">Name is required.</small>
+    <small *ngIf="userForm.controls.name.errors?.minlength">Minimum 3 characters.</small>
+  </div>
+
+  <label for="email">Email:</label>
+  <input id="email" formControlName="email">
+  <div *ngIf="userForm.controls.email.invalid && userForm.controls.email.touched">
+    <small *ngIf="userForm.controls.email.errors?.required">Email is required.</small>
+    <small *ngIf="userForm.controls.email.errors?.email">Invalid email format.</small>
+  </div>
+
+  <label for="password">Password:</label>
+  <input id="password" type="password" formControlName="password">
+  <div *ngIf="userForm.controls.password.invalid && userForm.controls.password.touched">
+    <small *ngIf="userForm.controls.password.errors?.required">Password is required.</small>
+    <small *ngIf="userForm.controls.password.errors?.minlength">Minimum 6 characters.</small>
+    <small *ngIf="userForm.controls.password.errors?.pattern">Must contain letters and numbers.</small>
+  </div>
+
+  <button type="submit" [disabled]="userForm.invalid">Submit</button>
+</form>
+✅ Features: Required fields, email validation, password complexity check.
+🔹 Advantages of Reactive Forms:
+✔ Better for complex forms
+✔ More control over validation rules
+✔ Easier to test
+
+🚀 Custom Validators in Angular
+Angular allows custom validation functions.
+
+🔹 Step 1: Create a Custom Validator (custom.validators.ts)
+
+import { AbstractControl, ValidationErrors } from '@angular/forms';
+
+export function noSpacesValidator(control: AbstractControl): ValidationErrors | null {
+  if (control.value && control.value.includes(' ')) {
+    return { noSpaces: true }; // Return error object
+  }
+  return null; // Return null if valid
+}
+
+🔹 Step 2: Use the Validator in the Form
+
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { noSpacesValidator } from './custom.validators';
+
+export class AppComponent {
+  userForm = new FormGroup({
+    username: new FormControl('', [Validators.required, noSpacesValidator]),
+  });
+}
+
+🔹 Step 3: Add UI Validation in app.component.html
+
+<input id="username" formControlName="username">
+<div *ngIf="userForm.controls.username.errors?.noSpaces">
+  <small>Username should not contain spaces.</small>
+</div>
+
+✅ Features: Prevents spaces in username.
+
+🚀 Async Validation (Check if Email Exists in Database)
+
+Angular supports asynchronous validation using Observables and Promises.
+
+🔹 Step 1: Create Async Validator (async.validators.ts)
+
+import { AbstractControl } from '@angular/forms';
+import { Observable, of } from 'rxjs';
+import { delay, map } from 'rxjs/operators';
+
+const existingEmails = ['test@example.com', 'admin@example.com'];
+
+export function emailExistsValidator(control: AbstractControl): Observable<{ emailExists: boolean } | null> {
+  return of(existingEmails.includes(control.value)).pipe(
+    delay(1000), // Simulate server delay
+    map(exists => (exists ? { emailExists: true } : null))
+  );
+}
+
+🔹 Step 2: Apply Async Validator
+
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { emailExistsValidator } from './async.validators';
+
+export class AppComponent {
+  userForm = new FormGroup({
+    email: new FormControl('', [Validators.required, Validators.email], emailExistsValidator),
+  });
+}
+
+🔹 Step 3: Show UI Validation Message
+
+<input id="email" formControlName="email">
+<div *ngIf="userForm.controls.email.errors?.emailExists">
+  <small>Email already exists.</small>
+</div>
+✅ Feature: Simulates email validation against a database.
+
+
+ 
